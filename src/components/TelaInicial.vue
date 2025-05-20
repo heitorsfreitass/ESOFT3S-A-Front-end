@@ -1,12 +1,13 @@
 <template>
   <div class="app">
     <!-- Título principal da tela inicial -->
-    <h1 class="titulo">FINAL CODE: A Jornada dos</h1>
+    <h1 class="titulo">FINAL CODE: A Jornada dos Devs</h1>
 
     <!-- Container com os botões principais -->
     <div class="botoes">
       <!-- Botão que emite o evento 'trocarTela' com o valor 'TelaJogo' -->
-      <button @click="$emit('trocarTela', 'TelaJogo')">Jogar</button>
+      <button @click="$emit('trocarTela', 'telajogo')">Ir para TelaJogo</button>
+
 
       <!-- Botão que emite o evento 'trocarTela' com o valor 'TelaCustomizar' -->
       <button @click="$emit('trocarTela', 'TelaCustomizar')">Customizar</button>
