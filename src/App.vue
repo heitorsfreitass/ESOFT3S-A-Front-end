@@ -1,47 +1,28 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+  <div>
+    <TelaInicial v-if="telaAtual === 'inicio'" @trocarTela="mudarTela" />
+    <TelaCreditos v-if="telaAtual === 'creditos'" @voltar="mudarTela('inicio')" />
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-}
+<script>
+import TelaInicial from './components/TelaInicial.vue'
+import TelaCreditos from './components/TelaCreditos.vue'
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
+export default {
+  components: {
+    TelaInicial,
+    TelaCreditos,
+  },
+  data() {
+    return {
+      telaAtual: 'inicio',
+    }
+  },
+  methods: {
+    mudarTela(novaTela) {
+      this.telaAtual = novaTela
+    }
   }
 }
-</style>
+</script>
