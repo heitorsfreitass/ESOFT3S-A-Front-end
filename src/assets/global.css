@@ -1,0 +1,58 @@
+@import url('https://fonts.cdnfonts.com/css/minecraftia');
+
+/* estilo base para todas as telas */
+.app-screen {
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Minecraftia', sans-serif;
+    color: #00ffff;
+    text-shadow: 0 0 8px #00ffff;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* estilo padrão para botões */
+.game-button {
+    background-color: transparent;
+    border: 2px solid #00ffff;
+    color: #00ffff;
+    font-family: 'Minecraftia', sans-serif;
+    font-size: 1rem;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.game-button:hover {
+    background-color: #00ffff;
+    color: #000;
+    box-shadow: 0 0 12px #00ffff;
+}
+
+/* estilo para títulos */
+.game-title {
+    font-size: 2rem;
+    margin-bottom: 30px;
+}
+
+/* container de conteúdo centralizado */
+.game-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+}
+
+/* quadrado do perin ?? (exemplo de componente específico) não entendi o pq do quadrado... */
+.game-square {
+    width: 300px;
+    height: 300px;
+    background-color: #00ffff;
+    border-radius: 12px;
+    box-shadow: 0 0 20px #00ffff;
+}
