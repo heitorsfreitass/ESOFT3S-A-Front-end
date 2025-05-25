@@ -1,11 +1,12 @@
 <template>
+  <!-- Tela principal do componente -->
   <div class="app-screen">
-    <!-- Tela de seleção de personagem antes do jogo começar -->
+    <!-- Tela de seleção de personagem -->
     <div v-if="!jogoIniciado" class="tela-selecao">
       <h2>Escolha seu personagem</h2>
-
-      <!-- Lista de personagens clicáveis -->
+      <!-- Container dos personagens selecionaveis -->
       <div class="personagens">
+        <!-- Loop para renderizar cada personagem -->
         <div
           v-for="(p, index) in personagens"
           :key="index"
@@ -13,90 +14,113 @@
           :class="{ selecionado: personagemSelecionado === index }"
           @click="selecionarPersonagem(index)"
         >
+          <!-- Imagem do personagem -->
           <img v-if="p.image" :src="p.image" class="avatar" />
-          <div>{{ p.name }}</div>
+          <!-- Nome do personagem -->
+          <div class="nome-personagem">{{ p.name }}</div>
         </div>
       </div>
 
-      <!-- Botões de ação -->
+      <!-- area dos botoes de açao -->
       <div class="botoes-acao">
+        <!-- Botão para iniciar o jogo  -->
         <button class="game-button" @click="iniciarJogo" :disabled="personagemSelecionado === null">
           Iniciar Jogo
         </button>
+        <!-- Botão para voltar  -->
         <button class="game-button" @click="$emit('voltar')">Voltar</button>
       </div>
     </div>
 
-    <!-- Tela do jogo ativo -->
+    <!-- Tela do jogo  -->
     <div v-if="jogoIniciado" class="tela-jogo-ativo">
-      <!-- Avatar e nome do personagem -->
-      <div class="display-jogador">
-        <img :src="personagens[personagemSelecionado].image" class="avatar-jogador">
-        {{ personagens[personagemSelecionado].name }}
-      </div>
-
-      <!-- Palavras caindo -->
-      <div class="area-jogo">
-        <div class="palavras-caindo">
-          <!-- Renderiza palavras caindo -->
-          <div
-            v-for="(palavra, index) in palavrasAtivas"
-            :key="index"
-            class="palavra"
-            :style="{ top: palavra.y + 'px', left: palavra.x + '%' }"
-          >
-            {{ palavra.texto }}
-          </div>
+      <!-- Cabeçalho com informaçoes do jogador -->
+      <div class="cabecalho-jogo">
+        <div class="display-jogador">
+          <!-- Avatar e nome do personagem selecionado -->
+          <img :src="personagens[personagemSelecionado].image" class="avatar-jogador">
+          <span>{{ personagens[personagemSelecionado].name }}</span>
+        </div>
+        
+        <!-- Estatisticas do jogo -->
+        <div class="estatisticas-jogo">
+          <div>Pontuação: {{ pontuacao }}</div>
+          <!-- Contador de vidas -->
+          <div>Vidas: <span :class="{ 'vida-perdida': vidas < 3 }">{{ vidas }}</span></div>
+          <div>Fase: {{ faseAtual }}</div>
         </div>
       </div>
 
-      <!-- Input para digitar -->
-      <input
-        type="text"
-        v-model="palavraDigitada"
-        @keyup.enter="verificarPalavra"
-        placeholder="Digite a palavra aqui"
-        class="input-palavra"
-      />
+      <!-- area onde as palavras caem -->
+      <div class="area-jogo" ref="areaJogo">
+        <!-- Renderizador para as palavras-->
+        <div
+          v-for="(palavra, index) in palavrasAtivas"
+          :key="index"
+          class="palavra"
+          :style="{
+            top: palavra.y + 'px',
+            left: palavra.x + 'px',
+            color: palavra.cor || '#00ffff'
+          }"
+        >
+          {{ palavra.texto }}
+        </div>
+      </div>
 
-      <!-- Estatísticas do jogo -->
-      <div class="estatisticas-jogo">
-        <div>Pontuação: {{ pontuacao }}</div>
-        <div>Vidas: {{ vidas }}</div>
-        <div>Fase: {{ faseAtual }}</div>
+      <!-- area de controle com entrada para digitar palavras -->
+      <div class="controle-jogo">
+        <input
+          type="text"
+          v-model="palavraDigitada"
+          @keyup.enter="verificarPalavra"
+          placeholder="Digite a palavra aqui"
+          class="input-palavra"
+          ref="inputPalavra"
+          autofocus
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script>
-// Importa imagens dos personagens
+// Importaçaes dos nego
 import perinImg from '@/assets/characters/perin.jpg'
 import marcosImg from '@/assets/characters/marcos.jpg'
-
-// Importa o JSON com palavras por fase
+import andrezImg from '@/assets/characters/andrez.jpg'//marcao q porra e essa de foto
 import palavrasPorFase from '@/assets/palavras.json'
+
+// Cores de feedback para acertos e erros
+const CORES_FEEDBACK = {
+  acerto: '#00ff00',
+  erro: '#ff0000'
+}
 
 export default {
   data() {
     return {
-      personagemSelecionado: null, // Índice do personagem escolhido
-      jogoIniciado: false, // Se o jogo já começou
-      pontuacao: 0, // Pontuação do jogador
-      vidas: 3, // Vidas restantes
-      palavraDigitada: '', // Palavra digitada pelo jogador
-      palavrasAtivas: [], // Palavras caindo na tela
-      velocidadeQueda: 100, // Intervalo de atualização da queda
-      faseAtual: 1, // Número da fase atual
-      palavrasPorFase, // Objeto contendo as palavras por fase
-      listaPalavras: [], // Lista de palavras da fase carregada
-      intervaloPalavras: null, // Intervalo do setInterval
-      venceu: false, // Indicador de vitória da fase
-      // Lista de personagens disponíveis
+      personagemSelecionado: null, // indice do personagem selecionado
+      jogoIniciado: false,         // Controla se o jogo esta iniciado
+      pontuacao: 0,                // Pontuaçao atual do jogador
+      vidas: 3,                    // Numero de vidas restantes
+      palavraDigitada: '',          // Palavra digitada pelo jogador
+      palavrasAtivas: [],           // Array de palavras ativas na tela
+      velocidadeBase: 1,           // Velocidade base das palavras
+      faseAtual: 1,                // Fase atual do jogo
+      palavrasPorFase,              // dados das palavras por fase
+      listaPalavras: [],            // Lista de palavras da fase atual
+      intervaloPalavras: null,      // Referencia do intervalo de geração de palavras
+      intervaloAnimacao: null,      // referencia da animaçao frame a frame
+      areaJogo: {                   // Dimensoes da área de jogo
+        width: 800,
+        height: 500
+      },
+      // Lista dos personagens disponiveis
       personagens: [
         { name: 'Perin', type: 'dev', image: perinImg },
         { name: 'Marcos', type: 'dev', image: marcosImg },
-        { name: 'Andrezão', type: 'dev' },
+        { name: 'Andrezão', type: 'dev', image: andrezImg },
         { name: 'Gabe', type: 'dev' },
         { name: 'Dig', type: 'dev' },
         { name: 'Bernardo', type: 'dev' }
@@ -104,13 +128,30 @@ export default {
     }
   },
 
+  // Hook(funcao) chamado quando o componente e montado
+  mounted() {
+    this.atualizarDimensoesAreaJogo()
+    window.addEventListener('resize', this.atualizarDimensoesAreaJogo)
+  },
+
+  // Hook chamado antes do componente ser destruído
+  beforeDestroy() {
+    this.limparIntervalos()
+    window.removeEventListener('resize', this.atualizarDimensoesAreaJogo)
+  },
+
   methods: {
-    // Define o personagem escolhido
+    /**
+     * Seleciona um personagem
+     * @param {number} index - indice do personagem selecionado
+     */
     selecionarPersonagem(index) {
       this.personagemSelecionado = index
     },
 
-    // Inicia o jogo e reseta variáveis
+    /**
+     * Inicia o jogo, resetando todos os estados
+     */
     iniciarJogo() {
       if (this.personagemSelecionado === null) return
 
@@ -118,145 +159,446 @@ export default {
       this.pontuacao = 0
       this.vidas = 3
       this.faseAtual = 1
-      this.venceu = false
+      this.velocidadeBase = 1
       this.palavraDigitada = ''
       this.palavrasAtivas = []
 
-      this.carregarFase(this.faseAtual)
-      this.iniciarAnimacaoPalavras()
+      
+      this.$nextTick(() => {
+        this.atualizarDimensoesAreaJogo()
+        this.carregarFase(this.faseAtual)
+        this.iniciarAnimacaoPalavras()
+        this.$refs.inputPalavra.focus()
+      })
     },
 
-    // Carrega palavras da fase atual
+    /**
+     * Atualiza as dimensoes da area de jogo
+     */
+    atualizarDimensoesAreaJogo() {
+      if (this.$refs.areaJogo) {
+        this.areaJogo.width = this.$refs.areaJogo.offsetWidth
+        this.areaJogo.height = this.$refs.areaJogo.offsetHeight
+      }
+    },
+
+    /**
+     * Carrega as palavras para a fase especificada
+     * @param {number} fase - Numero da fase a ser carregada
+     */
     carregarFase(fase) {
       const palavras = this.palavrasPorFase['fase' + fase]
       this.listaPalavras = palavras ? [...palavras] : []
     },
 
-    // Inicia a queda das palavras na tela
+    /**
+     * Inicia a animaçao das palavras caindo
+     */
     iniciarAnimacaoPalavras() {
+      this.limparIntervalos()
+
+      // Configura intervalo para adicionar novas palavras
       this.intervaloPalavras = setInterval(() => {
         if (this.listaPalavras.length === 0) return
 
+        // Seleciona palavra aleatorias da lista
         const texto = this.listaPalavras[Math.floor(Math.random() * this.listaPalavras.length)]
-        const novaPalavra = {
+        this.palavrasAtivas.push({
           texto,
-          y: 0,
-          x: Math.random() * 90
-        }
-        this.palavrasAtivas.push(novaPalavra)
-
-        // Atualiza a posição de cada palavra
-        this.palavrasAtivas.forEach((p, index) => {
-          p.y += 45
-          if (p.y > 500) {
-            this.vidas--
-            this.palavrasAtivas.splice(index, 1)
-            if (this.vidas <= 0) {
-              clearInterval(this.intervaloPalavras)
-              alert('Você perdeu!')
-              this.jogoIniciado = false
-            }
-          }
+          y: 0, // Posição Y inicial (topo)
+          x: Math.random() * (this.areaJogo.width - 100), // Posição X aleatoria
+          velocidade: 0.5 + Math.random() * 0.5 // velocidade aleatoria
         })
-      }, 500) // MUDA O DELAY Q DEMORA P CAIR AS PALAVRAS
+      }, 2000) // Intervalo entre palavras
+
+    
+      this.intervaloAnimacao = requestAnimationFrame(this.animarPalavras)
     },
 
-    // Verifica se o jogador digitou uma palavra correta
-    verificarPalavra() {
-      const index = this.palavrasAtivas.findIndex(p => p.texto.toLowerCase() === this.palavraDigitada.toLowerCase())
+    /**
+     * Animação frame a frame das palavras caindo
+     */
+    animarPalavras() {
+      const novasPalavrasAtivas = []
+      let perdeuVida = false
 
-      if (index !== -1) {
-        this.pontuacao++
-        this.palavrasAtivas.splice(index, 1)
-
-        // Ao alcançar 20 pontos, avança a fase
-        if (this.pontuacao >= 20) {
-          clearInterval(this.intervaloPalavras)
-          this.venceu = true
-          alert(`Você venceu a fase ${this.faseAtual}!`)
-
-          // Vai para próxima fase se existir
-          this.faseAtual++
-          if (this.palavrasPorFase['fase' + this.faseAtual]) {
-            this.carregarFase(this.faseAtual)
-            this.pontuacao = 0
-            this.vidas = 3
-            this.palavrasAtivas = []
-            this.palavraDigitada = ''
-            this.iniciarAnimacaoPalavras()
-          } else {
-            alert('Parabéns! Você completou todas as fases.')
-            this.jogoIniciado = false
+      // Atualiza posição de cada palavra
+      this.palavrasAtivas.forEach(palavra => {
+        palavra.y += palavra.velocidade * this.velocidadeBase
+        
+        // Verifica se a palavra ainda está na tela
+        if (palavra.y < this.areaJogo.height) {
+          novasPalavrasAtivas.push(palavra)
+        } else if (!perdeuVida) {
+          // Se a palavra saiu da tela, remove uma vida
+          perdeuVida = true
+          this.vidas--
+          
+          // Verifica se o jogador perdeu
+          if (this.vidas <= 0) {
+            this.fimDeJogo(false)
           }
         }
+      })
+
+      this.palavrasAtivas = novasPalavrasAtivas
+
+      // Continua a animação se o jogo está ativo
+      if (this.jogoIniciado) {
+        this.intervaloAnimacao = requestAnimationFrame(this.animarPalavras)
+      }
+    },
+
+    /**
+     * Verifica se a palavra digitada está na lista de palavras ativas
+     */
+    verificarPalavra() {
+      const palavraLower = this.palavraDigitada.toLowerCase()
+      const index = this.palavrasAtivas.findIndex(p => p.texto.toLowerCase() === palavraLower)
+
+      if (index !== -1) {
+        // Acerto: muda cor da palavra e remove após delay
+        this.palavrasAtivas[index].cor = CORES_FEEDBACK.acerto
+        setTimeout(() => {
+          this.palavrasAtivas.splice(index, 1)
+        }, 200)
+        
+        this.pontuacao++
+        
+        // Aumenta dificuldade a cada 5 acertos
+        if (this.pontuacao % 5 === 0) {
+          this.velocidadeBase += 0.2
+          clearInterval(this.intervaloPalavras)
+          const novoIntervalo = Math.max(500, 2000 - (this.pontuacao * 50))
+          this.intervaloPalavras = setInterval(this.adicionarPalavra, novoIntervalo)
+        }
+        
+        // Avança de fase ao atingir pontuação
+        if (this.pontuacao >= 20) {
+          this.avancarFase()
+        }
+      } else {
+        // Erro: feedback visual no input
+        this.palavraDigitada = ''
+        this.$refs.inputPalavra.style.borderColor = CORES_FEEDBACK.erro
+        setTimeout(() => {
+          this.$refs.inputPalavra.style.borderColor = '#00ffff'
+        }, 300)
       }
 
       this.palavraDigitada = ''
+    },
+
+    /**
+     * Adiciona uma nova palavra à lista de palavras ativas
+     */
+    adicionarPalavra() {
+      if (this.listaPalavras.length === 0) return
+
+      const texto = this.listaPalavras[Math.floor(Math.random() * this.listaPalavras.length)]
+      this.palavrasAtivas.push({
+        texto,
+        y: 0,
+        x: Math.random() * (this.areaJogo.width - 100),
+        velocidade: 0.5 + Math.random() * (0.5 + this.velocidadeBase * 0.3)
+      })
+    },
+
+    /**
+     * Avança para a proxima fase do jogo
+     */
+    avancarFase() {
+      clearInterval(this.intervaloPalavras)
+      cancelAnimationFrame(this.intervaloAnimacao)
+      
+      this.faseAtual++
+      
+      
+      if (this.palavrasPorFase['fase' + this.faseAtual]) {
+        setTimeout(() => {
+          alert(`Fase ${this.faseAtual - 1} completada! Iniciando fase ${this.faseAtual}...`)
+          this.pontuacao = 0
+          this.velocidadeBase = 1 + (this.faseAtual * 0.3)
+          this.palavrasAtivas = []
+          this.carregarFase(this.faseAtual)
+          this.iniciarAnimacaoPalavras()
+        }, 500)
+      } else {
+        
+        this.fimDeJogo(true)
+      }
+    },
+
+    /**
+     * Finaliza o jogo
+     * @param {boolean} vitoria - Indica se o jogador venceu
+     */
+    fimDeJogo(vitoria) {
+      this.limparIntervalos()
+      this.jogoIniciado = false
+      
+      setTimeout(() => {
+        alert(vitoria 
+          ? 'Parabéns! Você completou todas as fases!' 
+          : 'Game Over! Tente novamente.')
+      }, 100)
+    },
+
+    /**
+     * Limpa os intervalos de animação
+     */
+    limparIntervalos() {
+      if (this.intervaloPalavras) clearInterval(this.intervaloPalavras)
+      if (this.intervaloAnimacao) cancelAnimationFrame(this.intervaloAnimacao)
     }
   }
 }
 </script>
 
+<!-- CSS -->
 <style scoped>
-/* Palavras caindo */
-.palavra {
-  position: absolute;
-  font-size: 20px;
-  font-weight: bold;
+
+@import url('https://fonts.cdnfonts.com/css/minecraftia');
+
+/* css base da tela do jogo */
+.app-screen {
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Minecraftia', sans-serif;
   color: #00ffff;
   text-shadow: 0 0 8px #00ffff;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-/* Campo de input para digitar palavras */
-.input-palavra {
-  display: block;
-  margin: 20px auto;
-  font-size: 1.2rem;
-  padding: 10px;
+/* Estilo da tela de seleção de personagem */
+.tela-selecao {
+  background-color: rgba(15, 12, 41, 0.9);
   border: 2px solid #00ffff;
-  background: #000;
-  color: #00ffff;
-  border-radius: 8px;
-  text-align: center;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+  padding: 30px;
+  border-radius: 0;
+  max-width: 800px;
+  width: 100%;
 }
 
-/* Estilo dos personagens na seleção */
-.personagens {
+/* css da tela de jogo ativo */
+.tela-jogo-ativo {
+  background-color: rgba(15, 12, 41, 0.9);
+  border: 2px solid #00ffff;
+  width: 100%;
+  max-width: 1000px;
+  height: 90vh;
+  padding: 20px;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
-  margin: 20px 0;
+  flex-direction: column;
 }
 
-.personagem {
+/* css base dos botoes */
+.game-button {
+  background-color: transparent;
+  border: 2px solid #00ffff;
+  color: #00ffff;
+  font-family: 'Minecraftia', sans-serif;
+  padding: 12px 25px;
+  margin: 0 15px;
+  border-radius: 0;
+  text-shadow: 0 0 8px #00ffff;
+  transition: all 0.2s;
+  font-size: 1.2rem;
   cursor: pointer;
-  padding: 10px;
+}
+
+/* Efeito hover dos botões */
+.game-button:hover {
+  background-color: #00ffff;
+  color: #0f0c29;
+  box-shadow: 0 0 12px #00ffff;
+  transform: translateY(-2px);
+}
+
+/* css do botao desabilitado */
+.game-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: transparent;
+  color: #00ffff;
+  transform: none;
+  box-shadow: none;
+}
+
+/* grid dos personagens */
+.personagens {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin: 30px 0;
+}
+
+/* css de cada personagem */
+.personagem {
   border: 2px solid transparent;
-  border-radius: 10px;
-  text-align: center;
-  transition: border 0.2s ease;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.personagem img.avatar {
-  width: 70px;
-  height: 70px;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-.personagem.selecionado {
+/* efeito hover do personagem */
+.personagem:hover {
   border-color: #00ffff;
 }
 
-.display-jogador {
-  text-align: center;
-  margin: 10px;
+/* css do personagem selecionado */
+.personagem.selecionado {
+  border-color: #00ffff;
+  background-color: rgba(0, 255, 255, 0.1);
+  box-shadow: 0 0 15px #00ffff;
 }
 
-.display-jogador img.avatar-jogador {
+/* Avatar do personagem */
+.avatar {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 0;
+  border: 2px solid #00ffff;
+  margin-bottom: 10px;
+}
+
+/* nome do personagem */
+.nome-personagem {
+  font-size: 0.9rem;
+}
+
+/* area onde as palavras caem */
+.area-jogo {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 2px solid #00ffff;
+  border-radius: 0;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+  flex-grow: 1;
+  position: relative;
+  margin: 20px 0;
+  overflow: hidden;
+}
+
+/* css das palavras que caem */
+.palavra {
+  font-family: 'Minecraftia', sans-serif;
+  font-size: 24px;
+  text-shadow: 0 0 5px currentColor;
+  position: absolute;
+  white-space: nowrap;
+}
+
+/* Campo de entrada para digitar palavras */
+.input-palavra {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 2px solid #00ffff;
+  color: #00ffff;
+  font-family: 'Minecraftia', sans-serif;
+  border-radius: 0;
+  text-shadow: 0 0 5px #00ffff;
+  padding: 12px 20px;
+  font-size: 1.2rem;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  outline: none;
+}
+
+/* Placeholder da entrada */
+.input-palavra::placeholder {
+  color: #00ffff;
+  opacity: 0.7;
+}
+
+/* mostra do avatar do jogador durante o jogo */
+.avatar-jogador {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
+  border: 2px solid #00ffff;
+  border-radius: 0;
+  object-fit: cover;
+}
+
+/* perda de vidas */
+.vida-perdida {
+  color: #ff5555;
+  text-shadow: 0 0 8px #ff5555;
+}
+
+/* cabeçalho do jogo */
+.cabecalho-jogo {
+  border-bottom: 2px solid #00ffff;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* estatisticas */
+.estatisticas-jogo {
+  font-size: 1.1rem;
+  display: flex;
+  gap: 20px;
+}
+
+/* mostra do jogador */
+.display-jogador {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Container dos botões de açao */
+.botoes-acao {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+/* area de controle do jogo */
+.controle-jogo {
+  width: 100%;
+  padding: 10px 0;
+}
+
+/* Estilos responsivos para telas menores */
+@media (max-width: 768px) {
+  .personagens {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .game-button {
+    padding: 10px 20px;
+    margin: 0 10px;
+    font-size: 1rem;
+  }
+  
+  .estatisticas-jogo {
+    flex-direction: column;
+    gap: 5px;
+    font-size: 1rem;
+  }
+  
+  .cabecalho-jogo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .tela-selecao, .tela-jogo-ativo {
+    padding: 15px;
+  }
 }
 </style>
