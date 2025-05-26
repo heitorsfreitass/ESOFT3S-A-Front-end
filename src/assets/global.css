@@ -56,3 +56,19 @@
     border-radius: 12px;
     box-shadow: 0 0 20px #00ffff;
 }
+
+.audio-permission {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+}
+
+.audio-permission button {
+    background-color: #ff5555;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
