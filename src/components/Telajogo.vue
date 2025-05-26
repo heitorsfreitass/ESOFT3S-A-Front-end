@@ -35,7 +35,10 @@
     <!-- Tela do jogo  -->
     <div v-if="jogoIniciado" class="tela-jogo-ativo">
       <!-- Cabeçalho com informaçoes do vilão -->
-      
+      <div class="display-vilao" v-if="vilaoAtual">
+        <img :src="vilaoAtual.image" class="avatar-vilao">
+        <span>{{ vilaoAtual.name }}</span>
+      </div>
 
       <!-- area onde as palavras caem -->
       <div class="area-jogo" ref="areaJogo">
@@ -88,9 +91,17 @@
 
 <script>
 // Importaçaes dos nego
+import cidaoImg from '@/assets/characters/villains/cidao.jpg'
 import perinImg from '@/assets/characters/perin.jpg'
 import marcosImg from '@/assets/characters/marcos.jpg'
 import andrezImg from '@/assets/characters/andrez.jpg'
+
+import fase1Msc from '@/assets/sounds/primeira-fase.mp3'
+import fase2Msc from '@/assets/sounds/segunda-fase.mp3'
+
+import gameOver from '@/assets/sounds/gameover.mp3'
+import victory from '@/assets/sounds/victory.mp3'
+
 import palavrasPorFase from '@/assets/palavras.json'
 
 // Cores de feedback para acertos e erros
@@ -126,7 +137,17 @@ export default {
         { name: 'Gabe', type: 'dev' },
         { name: 'Dig', type: 'dev' },
         { name: 'Bernardo', type: 'dev' }
-      ]
+      ],
+      viloes: [
+        {name: 'Cidão, O Abominável (mas nem tanto)', image: cidaoImg, fase: 1, musica: fase1Msc},
+        {name: 'Ferlini, O Gostosinho...', image: cidaoImg, fase: 2, musica: fase2Msc},
+      ],
+      audioElement: null,
+      vilaoAtual: null,
+      sounds: {
+        gameOver: gameOver,
+        victory: victory
+      },
     }
   },
 
@@ -156,6 +177,8 @@ export default {
      */
     iniciarJogo() {
       if (this.personagemSelecionado === null) return
+
+      this.pararMusica();
 
       this.jogoIniciado = true
       this.pontuacao = 0
@@ -189,6 +212,14 @@ export default {
      * @param {number} fase - Numero da fase a ser carregada
      */
     carregarFase(fase) {
+      // Acha o vilão/professor da fase atual
+      this.vilaoAtual = this.viloes.find(v => v.fase === fase) || null;
+
+      // Da play na musica da fase
+      if (this.vilaoAtual && this.vilaoAtual.musica) {
+        this.iniciarMusica(this.vilaoAtual.musica);
+      }
+
       const palavras = this.palavrasPorFase['fase' + fase]
       this.listaPalavras = palavras ? [...palavras] : []
     },
@@ -341,6 +372,15 @@ export default {
      */
     fimDeJogo(vitoria) {
       this.limparIntervalos()
+      this.pararMusica()
+
+      // se ganhar, som de vitoria, se perder, som de game over
+      if (vitoria && this.sounds.victory) {
+        this.tocarSom(this.sounds.victory);
+      } else if (!vitoria &&  this.sounds.gameOver) {
+        this.tocarSom(this.sounds.gameOver);
+      }
+
       this.jogoIniciado = false
       
       setTimeout(() => {
@@ -356,6 +396,41 @@ export default {
     limparIntervalos() {
       if (this.intervaloPalavras) clearInterval(this.intervaloPalavras)
       if (this.intervaloAnimacao) cancelAnimationFrame(this.intervaloAnimacao)
+    },
+
+    iniciarMusica(musica) {
+      // Para a musica atual se tiver
+      this.pararMusica();
+
+      try {
+        this.audioElement = new Audio(musica);
+        this.audioElement.loop = true;
+        
+        this.audioElement.addEventListener('error', () => {
+          console.error("Erro ao carregar áudio");
+          this.audioElement = null;
+        })
+        
+      } catch(error) {
+        console.error("Erro ao iniciar musica: ", error);
+      }
+    },
+
+    pararMusica() {
+      if (this.audioElement) {
+        this.audioElement.pause();
+        this.audioElement.currentTime = 0;
+        this.audioElement = null;
+      }
+    },
+
+    tocarSom(som) {
+      try {
+        const audio = new Audio(som);
+        audio.play().catch(e => console.log("Erro ao reproduzir som: ", e));
+      } catch (error) {
+        console.error("Erro ao carregar audio: ", error);
+      }
     }
   }
 }
@@ -577,6 +652,22 @@ export default {
 .controle-jogo {
   width: 100%;
   padding: 10px 0;
+}
+
+/* Parte do vilão */
+.display-vilao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar-vilao {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #ff0000;
+  border-radius: 0;
+  object-fit: cover;
+  box-shadow: 0 0 10px #ff0000;
 }
 
 /* Estilos responsivos para telas menores */
