@@ -1,6 +1,9 @@
 <template>
   <!-- Tela principal do componente -->
   <div class="app-screen">
+    <div v-if="mostrarBotaoAudio" class="audio-permission">
+      <button @click="ativarAudio">Ativar música</button>
+    </div>
     <!-- Tela de seleção de personagem -->
     <div v-if="!jogoIniciado" class="tela-selecao">
       <h2>Escolha seu personagem</h2>
@@ -144,6 +147,7 @@ export default {
       ],
       audioElement: null,
       vilaoAtual: null,
+      mostrarBotaoAudio: false,
       sounds: {
         gameOver: gameOver,
         victory: victory
@@ -410,6 +414,17 @@ export default {
           console.error("Erro ao carregar áudio");
           this.audioElement = null;
         })
+
+        // Aqui inicia a reprodução
+        const playPromise = this.audioElement.play();
+    
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.log("Reprodução automática prevenida:", error);
+            // Mostra um botão para permitir que o usuário inicie a música
+            this.mostrarBotaoAudio = true;
+          });
+        }
         
       } catch(error) {
         console.error("Erro ao iniciar musica: ", error);
@@ -431,6 +446,13 @@ export default {
       } catch (error) {
         console.error("Erro ao carregar audio: ", error);
       }
+    }, 
+
+    ativarAudio() {
+      if (this.vilaoAtual && this.vilaoAtual.musica) {
+        this.iniciarMusica(this.vilaoAtual.musica);
+      }
+      this.mostrarBotaoAudio = false;
     }
   }
 }
