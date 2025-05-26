@@ -89,6 +89,12 @@
       </div>
         
     </div>
+
+    <div v-if="mostrarPopup" class="popup-overlay">
+      <div class="popup-content">
+        {{ mensagemPopup }}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -152,6 +158,8 @@ export default {
         gameOver: gameOver,
         victory: victory
       },
+      mostrarPopup: false,
+      mensagemPopup: '',
     }
   },
 
@@ -357,7 +365,8 @@ export default {
       
       if (this.palavrasPorFase['fase' + this.faseAtual]) {
         setTimeout(() => {
-          alert(`Fase ${this.faseAtual - 1} completada! Iniciando fase ${this.faseAtual}...`)
+          //alert(`Fase ${this.faseAtual - 1} completada! Iniciando fase ${this.faseAtual}...`)
+          this.mostrarPopupTemporario(`Fase ${this.faseAtual - 1} completada! Iniciando fase ${this.faseAtual}...`);
           this.pontuacao = 0
           this.velocidadeBase = 1 + (this.faseAtual * 0.3)
           this.palavrasAtivas = []
@@ -388,10 +397,11 @@ export default {
       this.jogoIniciado = false
       
       setTimeout(() => {
-        alert(vitoria 
+        /*alert(vitoria 
           ? 'Parabéns! Você completou todas as fases!' 
-          : 'Game Over! Tente novamente.')
-      }, 100)
+          : 'Game Over! Tente novamente.') */
+          this.mostrarPopupTemporario('Game over!')
+      }, 1000)
     },
 
     /**
@@ -453,7 +463,18 @@ export default {
         this.iniciarMusica(this.vilaoAtual.musica);
       }
       this.mostrarBotaoAudio = false;
+    },
+
+    mostrarPopupTemporario(mensagem) {
+      this.mensagemPopup = mensagem;
+      this.mostrarPopup = true;
+
+      setTimeout(() => {
+        this.mostrarPopup = false;
+        this.mensagemPopup = '';
+      }, 3000);
     }
+
   }
 }
 </script>
@@ -691,6 +712,51 @@ export default {
   object-fit: cover;
   box-shadow: 0 0 10px #ff0000;
 }
+
+/* Popup styles */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.popup-content {
+  background: linear-gradient(135deg, #0f0c29, #302b63);
+  border: 2px solid #00ffff;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+  padding: 30px 50px;
+  border-radius: 0;
+  font-size: 1.5rem;
+  text-align: center;
+  max-width: 80%;
+  animation: slideUp 0.3s ease-out;
+  text-shadow: 0 0 8px #00ffff;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 
 /* Estilos responsivos para telas menores */
 @media (max-width: 768px) {
