@@ -34,22 +34,8 @@
 
     <!-- Tela do jogo  -->
     <div v-if="jogoIniciado" class="tela-jogo-ativo">
-      <!-- Cabeçalho com informaçoes do jogador -->
-      <div class="cabecalho-jogo">
-        <div class="display-jogador">
-          <!-- Avatar e nome do personagem selecionado -->
-          <img :src="personagens[personagemSelecionado].image" class="avatar-jogador">
-          <span>{{ personagens[personagemSelecionado].name }}</span>
-        </div>
-        
-        <!-- Estatisticas do jogo -->
-        <div class="estatisticas-jogo">
-          <div>Pontuação: {{ pontuacao }}</div>
-          <!-- Contador de vidas -->
-          <div>Vidas: <span :class="{ 'vida-perdida': vidas < 3 }">{{ vidas }}</span></div>
-          <div>Fase: {{ faseAtual }}</div>
-        </div>
-      </div>
+      <!-- Cabeçalho com informaçoes do vilão -->
+      
 
       <!-- area onde as palavras caem -->
       <div class="area-jogo" ref="areaJogo">
@@ -69,17 +55,33 @@
       </div>
 
       <!-- area de controle com entrada para digitar palavras -->
-      <div class="controle-jogo">
+      <div class="controle-jogo text-center"> <!-- Alterado de @keyup.enter para @input -->
         <input
           type="text"
           v-model="palavraDigitada"
-          @keyup.enter="verificarPalavra"
+          @input="verificarPalavra"
           placeholder="Digite a palavra aqui"
           class="input-palavra"
           ref="inputPalavra"
           autofocus
         />
       </div>
+      <!-- Rodapé do jogo com input e informações do jogo-->
+      <div class="cabecalho-jogo">
+          <div class="display-jogador">
+            <!-- Avatar e nome do personagem selecionado -->
+            <img :src="personagens[personagemSelecionado].image" class="avatar-jogador">
+            <span>Jogando como: {{ personagens[personagemSelecionado].name }}</span>
+          </div>
+            <!-- Estatisticas do jogo -->
+          <div class="estatisticas-jogo">
+            <div>Pontuação: {{ pontuacao }}</div>
+            <!-- Contador de vidas -->
+            <div>Vidas: <span :class="{ 'vida-perdida': vidas < 3 }">{{ vidas }}</span></div>
+            <div>Fase: {{ faseAtual }}</div>
+          </div>
+      </div>
+        
     </div>
   </div>
 </template>
@@ -88,7 +90,7 @@
 // Importaçaes dos nego
 import perinImg from '@/assets/characters/perin.jpg'
 import marcosImg from '@/assets/characters/marcos.jpg'
-import andrezImg from '@/assets/characters/andrez.jpg'//marcao q porra e essa de foto
+import andrezImg from '@/assets/characters/andrez.jpg'
 import palavrasPorFase from '@/assets/palavras.json'
 
 // Cores de feedback para acertos e erros
@@ -252,41 +254,45 @@ export default {
     /**
      * Verifica se a palavra digitada está na lista de palavras ativas
      */
-    verificarPalavra() {
+    verificarPalavra() { // Ela agora verifica digitação em tempo real, sem precisar apertar 'enter' para enviar
       const palavraLower = this.palavraDigitada.toLowerCase()
-      const index = this.palavrasAtivas.findIndex(p => p.texto.toLowerCase() === palavraLower)
 
-      if (index !== -1) {
-        // Acerto: muda cor da palavra e remove após delay
-        this.palavrasAtivas[index].cor = CORES_FEEDBACK.acerto
+      // Encontra a primeira palavra que começa com o texto digitado
+      const palavraCorrespondente = this.palavrasAtivas.find(p => 
+        p.texto.toLowerCase().startsWith(palavraLower)
+      );
+
+      if (palavraCorrespondente && palavraCorrespondente.texto.toLowerCase() === palavraLower) {
+        // Completa (palavra totalmente digitada)
+        palavraCorrespondente.cor = CORES_FEEDBACK.acerto;
         setTimeout(() => {
-          this.palavrasAtivas.splice(index, 1)
-        }, 200)
+          this.palavrasAtivas = this.palavrasAtivas.filter(p => p !== palavraCorrespondente);
+        }, 200);
         
-        this.pontuacao++
+        this.pontuacao++;
+        this.palavraDigitada = ''; // Reseta o input depois de acertar
         
         // Aumenta dificuldade a cada 5 acertos
         if (this.pontuacao % 5 === 0) {
-          this.velocidadeBase += 0.2
-          clearInterval(this.intervaloPalavras)
-          const novoIntervalo = Math.max(500, 2000 - (this.pontuacao * 50))
-          this.intervaloPalavras = setInterval(this.adicionarPalavra, novoIntervalo)
+          this.velocidadeBase += 0.2;
+          clearInterval(this.intervaloPalavras);
+          const novoIntervalo = Math.max(500, 2000 - (this.pontuacao * 50));
+          this.intervaloPalavras = setInterval(this.adicionarPalavra, novoIntervalo);
         }
         
         // Avança de fase ao atingir pontuação
         if (this.pontuacao >= 20) {
-          this.avancarFase()
+          this.avancarFase();
         }
-      } else {
+      } else if (!palavraCorrespondente && this.palavraDigitada) {
         // Erro: feedback visual no input
-        this.palavraDigitada = ''
-        this.$refs.inputPalavra.style.borderColor = CORES_FEEDBACK.erro
+        this.$refs.inputPalavra.style.borderColor = CORES_FEEDBACK.erro;
         setTimeout(() => {
-          this.$refs.inputPalavra.style.borderColor = '#00ffff'
-        }, 300)
+          if (this.$refs.inputPalavra) {
+            this.$refs.inputPalavra.style.borderColor = '#00ffff';
+          }
+        }, 300);
       }
-
-      this.palavraDigitada = ''
     },
 
     /**
