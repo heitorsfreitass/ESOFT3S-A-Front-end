@@ -1,5 +1,5 @@
 {
-  "fase1": ["casa", "carro", "bola", "dinheiro", "teste", "mamao","discord","cidao","barriga"],
-  "fase2": ["cachorro", "computador", "ventilador"],
+  "fase1": ["bit", "byte", "bite", "ram", "rom", "cache", "cpu", "alu", "memoria", "tabela-verdade", "clock", "dados", "instrucoes", "entrada", "saida", "barramento", "controle", "binario", "hexadecimal", "busca", "execucao", "salto", "soma", "sub", "overflow", "karnaugh", "and", "or", "not", "xor"],
+  "fase2": ["ip", "dns", "tcp", "udp", "man", "endereco", "protocolo", "conexao", "transmissao", "comunicacao", "roteamento", "comutacao", "segmentacao", "encapsulamento", "latencia", "banda", "broadcast", "multicast", "unicast", "handshake", "topologia", "camada", "modelo", "osi", "tcpip", "navegador", "servidor", "cliente", "pacote", "porta", "wifi", "ping", "lan", "wan", "dhcp"],
   "fase3": ["universidade", "dificuldade", "oportunidade"]
 }

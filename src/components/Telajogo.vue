@@ -66,6 +66,7 @@
           type="text"
           v-model="palavraDigitada"
           @input="verificarPalavra"
+          @keydown.enter="limparInput"
           placeholder="Digite a palavra aqui"
           class="input-palavra"
           ref="inputPalavra"
@@ -473,7 +474,11 @@ export default {
         this.mostrarPopup = false;
         this.mensagemPopup = '';
       }, 3000);
-    }
+    },
+
+    limparInput(){ //função para limpar o input quando aperta enter
+      this.palavraDigitada = '';
+    },
 
   }
 }
