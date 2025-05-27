@@ -487,8 +487,6 @@ export default {
 <!-- CSS -->
 <style scoped>
 
-@import url('https://fonts.cdnfonts.com/css/minecraftia');
-
 /* css base da tela do jogo */
 .app-screen {
   width: 100vw;
