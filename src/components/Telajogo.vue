@@ -1,101 +1,138 @@
 <template>
-  <!-- Tela principal do componente -->
   <div class="app-screen">
+    <!-- Efeitos de fundo -->
+    <div class="bg-effects">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
+    
     <div v-if="mostrarBotaoAudio" class="audio-permission">
       <button @click="ativarAudio">Ativar música</button>
     </div>
+
     <!-- Tela de seleção de personagem -->
-    <div v-if="!jogoIniciado" class="tela-selecao">
-      <h2>Escolha seu personagem</h2>
-      <!-- Container dos personagens selecionaveis -->
-      <div class="personagens">
-        <!-- Loop para renderizar cada personagem -->
+    <div v-if="!jogoIniciado" class="selection-screen">
+      <h1 class="game-title">ESCOLHA SEU PERSONAGEM</h1>
+      
+      <div class="characters-grid">
         <div
           v-for="(p, index) in personagens"
           :key="index"
-          class="personagem"
-          :class="{ selecionado: personagemSelecionado === index }"
+          class="character-card"
+          :class="{ selected: personagemSelecionado === index }"
           @click="selecionarPersonagem(index)"
         >
-          <!-- Imagem do personagem -->
-          <img v-if="p.image" :src="p.image" class="avatar" />
-          <!-- Nome do personagem -->
-          <div class="nome-personagem">{{ p.name }}</div>
+          <div class="character-image-container">
+            <img v-if="p.image" :src="p.image" class="character-image" />
+            <div v-else class="character-placeholder">
+              <span>?</span>
+            </div>
+          </div>
+          <div class="character-name">{{ p.name }}</div>
+          <div class="character-selector"></div>
         </div>
       </div>
 
-      <!-- area dos botoes de açao -->
-      <div class="botoes-acao">
-        <!-- Botão para iniciar o jogo  -->
-        <button class="game-button" @click="iniciarJogo" :disabled="personagemSelecionado === null">
-          Iniciar Jogo
-        </button>
-        <!-- Botão para voltar  -->
-        <button class="game-button" @click="$emit('voltar')">Voltar</button>
-      </div>
-    </div>
-
-    <!-- Tela do jogo  -->
-    <div v-if="jogoIniciado" class="tela-jogo-ativo">
-      <!-- Cabeçalho com informaçoes do vilão -->
-      <div class="display-vilao" v-if="vilaoAtual">
-        <img :src="vilaoAtual.image" class="avatar-vilao">
-        <span>{{ vilaoAtual.name }}</span>
-      </div>
-
-      <!-- area onde as palavras caem -->
-      <div class="area-jogo" ref="areaJogo">
-        <!-- Renderizador para as palavras-->
-        <div
-          v-for="(palavra, index) in palavrasAtivas"
-          :key="index"
-          class="palavra"
-          :style="{
-            top: palavra.y + 'px',
-            left: palavra.x + 'px',
-            color: palavra.cor || '#00ffff'
-          }"
+      <div class="action-buttons">
+        <button 
+          class="game-button start-button" 
+          @click="iniciarJogo" 
+          :disabled="personagemSelecionado === null"
         >
-          {{ palavra.texto }}
+          <span>INICIAR JOGO</span>
+          <div class="button-glow"></div>
+        </button>
+        <button class="game-button back-button" @click="$emit('voltar')">
+          <span>VOLTAR</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tela do jogo ativo -->
+    <div v-if="jogoIniciado" class="game-screen">
+      <!-- Header do jogo -->
+      <div class="game-header">
+        <div class="player-info">
+          <div class="player-avatar-container">
+            <img :src="personagens[personagemSelecionado].image" class="player-avatar">
+            <div class="player-level">1</div>
+          </div>
+          <div class="player-details">
+            <div class="player-name">{{ personagens[personagemSelecionado].name }}</div>
+            <div class="health-bar">
+              <div class="health-fill" :style="{ width: (vidas/3)*100 + '%' }"></div>
+              <div class="health-text">{{ vidas }} ❤️</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="game-stats">
+          <div class="stat">
+            <div class="stat-label">PONTOS</div>
+            <div class="stat-value">{{ pontuacao }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">FASE</div>
+            <div class="stat-value">{{ faseAtual }}</div>
+          </div>
+        </div>
+        
+        <div class="villain-container" v-if="vilaoAtual">
+          <div class="villain-avatar-container">
+            <img :src="vilaoAtual.image" class="villain-avatar">
+            <div class="villain-level">{{ vilaoAtual.fase }}</div>
+          </div>
+          <div class="villain-name">{{ vilaoAtual.name }}</div>
         </div>
       </div>
 
-      <!-- area de controle com entrada para digitar palavras -->
-      <div class="controle-jogo text-center"> <!-- Alterado de @keyup.enter para @input -->
-        <input
-          type="text"
-          v-model="palavraDigitada"
-          @input="verificarPalavra"
-          @keydown.enter="limparInput"
-          placeholder="Digite a palavra aqui"
-          class="input-palavra"
-          ref="inputPalavra"
-          autofocus
-        />
-      </div>
-      <!-- Rodapé do jogo com input e informações do jogo-->
-      <div class="cabecalho-jogo">
-          <div class="display-jogador">
-            <!-- Avatar e nome do personagem selecionado -->
-            <img :src="personagens[personagemSelecionado].image" class="avatar-jogador">
-            <span>Jogando como: {{ personagens[personagemSelecionado].name }}</span>
+      <!-- Área do jogo -->
+      <div class="game-area" ref="areaJogo">
+        <div class="falling-words-container">
+          <div
+            v-for="(palavra, index) in palavrasAtivas"
+            :key="index"
+            class="falling-word"
+            :style="{
+              top: palavra.y + 'px',
+              left: palavra.x + 'px',
+              color: palavra.cor || getRandomColor(),
+              filter: `drop-shadow(0 0 5px ${palavra.cor || getRandomColor()})`
+            }"
+          >
+            {{ palavra.texto }}
           </div>
-            <!-- Estatisticas do jogo -->
-          <div class="estatisticas-jogo">
-            <div>Pontuação: {{ pontuacao }}</div>
-            <!-- Contador de vidas -->
-            <div>Vidas: <span :class="{ 'vida-perdida': vidas < 3 }">{{ vidas }}</span></div>
-            <div>Fase: {{ faseAtual }}</div>
-          </div>
+        </div>
       </div>
-        
+
+      <!-- Controles -->
+      <div class="game-controls">
+        <div class="input-container">
+          <input
+            type="text"
+            v-model="palavraDigitada"
+            @input="verificarPalavra"
+            @keydown.enter="limparInput"
+            placeholder="Digite a palavra aqui..."
+            class="game-input"
+            ref="inputPalavra"
+            autofocus
+          />
+          <div class="input-border"></div>
+        </div>
+      </div>
     </div>
 
-    <div v-if="mostrarPopup" class="popup-overlay">
-      <div class="popup-content">
-        {{ mensagemPopup }}
+    <!-- Popup de mensagem -->
+    <transition name="popup">
+      <div v-if="mostrarPopup" class="popup-overlay" @click="mostrarPopup = false">
+        <div class="popup-content">
+          <div class="popup-message">{{ mensagemPopup }}</div>
+          <div class="popup-progress"></div>
+        </div>
       </div>
-    </div>
+    </transition>
   </div>
 </template>
 
@@ -480,313 +517,558 @@ export default {
       this.palavraDigitada = '';
     },
 
+    getRandomColor() {
+      const colors = ['#00ffcc', '#ff00ff', '#6e00ff', '#ff3860', '#2afc98'];
+      return colors[Math.floor(Math.random() * colors.length)];
+    },
+
   }
 }
 </script>
 
 <!-- CSS -->
 <style scoped>
-
-/* css base da tela do jogo */
+/* Container principal */
 .app-screen {
-  width: 100vw;
-  height: 100vh;
-  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: 'Minecraftia', sans-serif;
-  color: #00ffff;
-  text-shadow: 0 0 8px #00ffff;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-/* Estilo da tela de seleção de personagem */
-.tela-selecao {
-  background-color: rgba(15, 12, 41, 0.9);
-  border: 2px solid #00ffff;
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
-  padding: 30px;
-  border-radius: 0;
-  max-width: 800px;
-  width: 100%;
-}
-
-/* css da tela de jogo ativo */
-.tela-jogo-ativo {
-  background-color: rgba(15, 12, 41, 0.9);
-  border: 2px solid #00ffff;
-  width: 100%;
-  max-width: 1000px;
-  height: 90vh;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* css base dos botoes */
-.game-button {
-  background-color: transparent;
-  border: 2px solid #00ffff;
-  color: #00ffff;
-  font-family: 'Minecraftia', sans-serif;
-  padding: 12px 25px;
-  margin: 0 15px;
-  border-radius: 0;
-  text-shadow: 0 0 8px #00ffff;
-  transition: all 0.2s;
-  font-size: 1.2rem;
-  cursor: pointer;
-}
-
-/* Efeito hover dos botões */
-.game-button:hover {
-  background-color: #00ffff;
-  color: #0f0c29;
-  box-shadow: 0 0 12px #00ffff;
-  transform: translateY(-2px);
-}
-
-/* css do botao desabilitado */
-.game-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background-color: transparent;
-  color: #00ffff;
-  transform: none;
-  box-shadow: none;
-}
-
-/* grid dos personagens */
-.personagens {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin: 30px 0;
-}
-
-/* css de cada personagem */
-.personagem {
-  border: 2px solid transparent;
-  padding: 15px;
-  cursor: pointer;
-  transition: all 0.2s;
-  background-color: rgba(0, 0, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* efeito hover do personagem */
-.personagem:hover {
-  border-color: #00ffff;
-}
-
-/* css do personagem selecionado */
-.personagem.selecionado {
-  border-color: #00ffff;
-  background-color: rgba(0, 255, 255, 0.1);
-  box-shadow: 0 0 15px #00ffff;
-}
-
-/* Avatar do personagem */
-.avatar {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 0;
-  border: 2px solid #00ffff;
-  margin-bottom: 10px;
-}
-
-/* nome do personagem */
-.nome-personagem {
-  font-size: 0.9rem;
-}
-
-/* area onde as palavras caem */
-.area-jogo {
-  background-color: rgba(0, 0, 0, 0.5);
-  border: 2px solid #00ffff;
-  border-radius: 0;
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-  flex-grow: 1;
   position: relative;
-  margin: 20px 0;
   overflow: hidden;
 }
 
-/* css das palavras que caem */
-.palavra {
-  font-family: 'Minecraftia', sans-serif;
-  font-size: 24px;
-  text-shadow: 0 0 5px currentColor;
+/* Efeitos de fundo */
+.bg-effects {
   position: absolute;
-  white-space: nowrap;
-}
-
-/* Campo de entrada para digitar palavras */
-.input-palavra {
-  background-color: rgba(0, 0, 0, 0.5);
-  border: 2px solid #00ffff;
-  color: #00ffff;
-  font-family: 'Minecraftia', sans-serif;
-  border-radius: 0;
-  text-shadow: 0 0 5px #00ffff;
-  padding: 12px 20px;
-  font-size: 1.2rem;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  outline: none;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
 }
 
-/* Placeholder da entrada */
-.input-palavra::placeholder {
-  color: #00ffff;
-  opacity: 0.7;
+.particle {
+  position: absolute;
+  background: rgba(110, 0, 255, 0.3);
+  border-radius: 50%;
+  animation: float 15s infinite linear;
 }
 
-/* mostra do avatar do jogador durante o jogo */
-.avatar-jogador {
-  width: 60px;
-  height: 60px;
-  border: 2px solid #00ffff;
-  border-radius: 0;
+.particle:nth-child(1) {
+  width: 300px;
+  height: 300px;
+  top: -100px;
+  left: -100px;
+  animation-delay: 0s;
+}
+
+.particle:nth-child(2) {
+  width: 200px;
+  height: 200px;
+  bottom: -50px;
+  right: -50px;
+  animation-delay: 5s;
+}
+
+.particle:nth-child(3) {
+  width: 150px;
+  height: 150px;
+  top: 50%;
+  right: -50px;
+  animation-delay: 10s;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(50px, 50px) rotate(180deg); }
+  100% { transform: translate(0, 0) rotate(360deg); }
+}
+
+/* Tela de seleção */
+.selection-screen {
+  width: 90%;
+  max-width: 1000px;
+  padding: 2rem;
+  background: rgba(10, 4, 26, 0.8);
+  border-radius: 20px;
+  box-shadow: 0 0 30px rgba(110, 0, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.characters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.character-card {
+  background: rgba(20, 10, 40, 0.6);
+  border-radius: 15px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(110, 0, 255, 0.3);
+}
+
+.character-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(110, 0, 255, 0.3);
+  border-color: var(--accent);
+}
+
+.character-card.selected {
+  background: rgba(110, 0, 255, 0.2);
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+}
+
+.character-card.selected .character-selector {
+  opacity: 1;
+}
+
+.character-image-container {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.character-image {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
-/* perda de vidas */
-.vida-perdida {
-  color: #ff5555;
-  text-shadow: 0 0 8px #ff5555;
+.character-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
 }
 
-/* cabeçalho do jogo */
-.cabecalho-jogo {
-  border-bottom: 2px solid #00ffff;
-  padding-bottom: 15px;
-  margin-bottom: 20px;
+.character-name {
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  color: var(--light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.character-selector {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--accent);
+  border-radius: 15px;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.start-button {
+  position: relative;
+  overflow: visible;
+  background: linear-gradient(45deg, var(--accent), var(--success));
+}
+
+.start-button .button-glow {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: linear-gradient(45deg, var(--accent), var(--success));
+  border-radius: 50px;
+  filter: blur(15px);
+  opacity: 0.7;
+  z-index: -1;
+  animation: pulse-glow 2s infinite;
+}
+
+.back-button {
+  background: linear-gradient(45deg, var(--dark), #333);
+}
+
+/* Tela de jogo */
+.game-screen {
+  width: 90%;
+  max-width: 1200px;
+  height: 90vh;
+  background: rgba(10, 4, 26, 0.8);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 0 30px rgba(110, 0, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+.game-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* estatisticas */
-.estatisticas-jogo {
-  font-size: 1.1rem;
-  display: flex;
-  gap: 20px;
-}
-
-/* mostra do jogador */
-.display-jogador {
+.player-info {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 1rem;
 }
 
-/* Container dos botões de açao */
-.botoes-acao {
-  display: flex;
-  justify-content: center;
-  margin-top: 30px;
-}
-
-/* area de controle do jogo */
-.controle-jogo {
-  width: 100%;
-  padding: 10px 0;
-}
-
-/* Parte do vilão */
-.display-vilao {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.avatar-vilao {
+.player-avatar-container {
+  position: relative;
   width: 60px;
   height: 60px;
-  border: 2px solid #ff0000;
-  border-radius: 0;
-  object-fit: cover;
-  box-shadow: 0 0 10px #ff0000;
 }
 
-/* Popup styles */
+.player-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+
+.player-level {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background: var(--primary);
+  color: white;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border: 2px solid var(--dark);
+}
+
+.player-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.player-name {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--light);
+}
+
+.health-bar {
+  width: 120px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.health-fill {
+  height: 100%;
+  background: linear-gradient(to right, var(--danger), var(--success));
+  transition: width 0.3s;
+}
+
+.health-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.6rem;
+  color: white;
+  text-shadow: 0 0 3px black;
+}
+
+.game-stats {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.3rem;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
+}
+
+.villain-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.villain-avatar-container {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.villain-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--danger);
+  box-shadow: 0 0 10px var(--danger);
+}
+
+.villain-level {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background: var(--danger);
+  color: white;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border: 2px solid var(--dark);
+}
+
+.villain-name {
+  font-size: 0.7rem;
+  color: var(--danger);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+  max-width: 100px;
+}
+
+/* Área do jogo */
+.game-area {
+  flex-grow: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 15px;
+  margin: 1rem 0;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.falling-words-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.falling-word {
+  position: absolute;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  font-weight: bold;
+  white-space: nowrap;
+  user-select: none;
+  transition: color 0.3s;
+  animation: float-text 1s infinite alternate;
+}
+
+@keyframes float-text {
+  from { transform: translateY(0); }
+  to { transform: translateY(-5px); }
+}
+
+/* Controles */
+.game-controls {
+  width: 100%;
+  padding: 0.5rem 0;
+}
+
+.input-container {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.game-input {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50px;
+  color: white;
+  outline: none;
+  position: relative;
+  z-index: 1;
+}
+
+.input-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, var(--primary), var(--accent));
+  border-radius: 50px;
+  z-index: 0;
+  opacity: 0.7;
+  transition: all 0.3s;
+}
+
+.input-container:focus-within .input-border {
+  opacity: 1;
+  transform: scale(1.02);
+}
+
+.game-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Popup */
 .popup-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 0.3s ease-out;
 }
 
 .popup-content {
-  background: linear-gradient(135deg, #0f0c29, #302b63);
-  border: 2px solid #00ffff;
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-  padding: 30px 50px;
-  border-radius: 0;
-  font-size: 1.5rem;
+  background: linear-gradient(145deg, var(--darker), var(--dark));
+  border-radius: 15px;
+  padding: 2rem 3rem;
   text-align: center;
   max-width: 80%;
-  animation: slideUp 0.3s ease-out;
-  text-shadow: 0 0 8px #00ffff;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 30px rgba(110, 0, 255, 0.5);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.popup-message {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  background: linear-gradient(to right, var(--accent), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-@keyframes slideUp {
-  from { 
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to { 
-    transform: translateY(0);
-    opacity: 1;
-  }
+.popup-progress {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
 }
 
+.popup-progress::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(to right, var(--accent), var(--secondary));
+  animation: progress-bar 3s linear forwards;
+}
 
-/* Estilos responsivos para telas menores */
+@keyframes progress-bar {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* Transições */
+.popup-enter-active, .popup-leave-active {
+  transition: opacity 0.3s;
+}
+.popup-enter, .popup-leave-to {
+  opacity: 0;
+}
+
+/* Responsividade */
 @media (max-width: 768px) {
-  .personagens {
+  .game-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .characters-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   
+  .action-buttons {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
   .game-button {
-    padding: 10px 20px;
-    margin: 0 10px;
-    font-size: 1rem;
+    width: 100%;
   }
   
-  .estatisticas-jogo {
-    flex-direction: column;
-    gap: 5px;
-    font-size: 1rem;
+  .player-info, .game-stats, .villain-container {
+    width: 100%;
+    justify-content: center;
   }
   
-  .cabecalho-jogo {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+  .popup-content {
+    padding: 1.5rem;
   }
   
-  .tela-selecao, .tela-jogo-ativo {
-    padding: 15px;
+  .popup-message {
+    font-size: 1.2rem;
   }
 }
 </style>

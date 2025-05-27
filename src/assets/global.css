@@ -1,74 +1,193 @@
-@import url('https://fonts.cdnfonts.com/css/minecraftia');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap');
 
-/* estilo base para todas as telas */
-.app-screen {
-    width: 100vw;
-    height: 100vh;
-    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Minecraftia', sans-serif;
-    color: #00ffff;
-    text-shadow: 0 0 8px #00ffff;
-    padding: 20px;
-    box-sizing: border-box;
+:root {
+  --primary: #6e00ff;
+  --secondary: #ff00ff;
+  --accent: #00ffcc;
+  --dark: #0a041a;
+  --darker: #050210;
+  --light: #e0f8ff;
+  --danger: #ff3860;
+  --success: #2afc98;
+  --warning: #ffd166;
 }
 
-/* estilo padrão para botões */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--dark);
+  color: var(--light);
+  font-family: 'Orbitron', sans-serif;
+  overflow: hidden;
+}
+
+/* Efeito de partículas no fundo */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(110, 0, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(255, 0, 255, 0.15) 0%, transparent 50%),
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+  background-size: cover;
+  z-index: -1;
+}
+
+/* Efeito de scanlines */
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    rgba(0, 0, 0, 0) 50%, 
+    rgba(0, 0, 0, 0.3) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Estilo base para todas as telas */
+.app-screen {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efeito de brilho pulsante */
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 5px var(--primary); }
+  50% { box-shadow: 0 0 20px var(--primary), 0 0 30px var(--secondary); }
+  100% { box-shadow: 0 0 5px var(--primary); }
+}
+
+/* Estilo para botões */
 .game-button {
-    background-color: transparent;
-    border: 2px solid #00ffff;
-    color: #00ffff;
-    font-family: 'Minecraftia', sans-serif;
-    font-size: 1rem;
-    padding: 10px 20px;
-    cursor: pointer;
-    transition: 0.3s;
+  background: linear-gradient(145deg, var(--primary), var(--secondary));
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-radius: 50px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.game-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.5s;
+  z-index: -1;
 }
 
 .game-button:hover {
-    background-color: #00ffff;
-    color: #000;
-    box-shadow: 0 0 12px #00ffff;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
 }
 
-/* estilo para títulos */
+.game-button:hover::before {
+  left: 100%;
+}
+
+.game-button:disabled {
+  background: #555;
+  transform: none;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Estilo para títulos */
 .game-title {
-    font-size: 2rem;
-    margin-bottom: 30px;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  background: linear-gradient(to right, var(--accent), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+  position: relative;
+  display: inline-block;
 }
 
-/* container de conteúdo centralizado */
+.game-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(to right, var(--primary), var(--accent));
+  border-radius: 3px;
+}
+
+/* Container de conteúdo */
 .game-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
-/* quadrado do perin ?? (exemplo de componente específico) não entendi o pq do quadrado... */
-.game-square {
-    width: 300px;
-    height: 300px;
-    background-color: #00ffff;
-    border-radius: 12px;
-    box-shadow: 0 0 20px #00ffff;
-}
-
+/* Botão de permissão de áudio */
 .audio-permission {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 100;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+  animation: pulse 2s infinite;
 }
 
 .audio-permission button {
-    background-color: #ff5555;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
+  background: var(--danger);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 50px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  box-shadow: 0 0 15px var(--danger);
+  transition: all 0.3s;
+}
+
+.audio-permission button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px var(--danger);
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
