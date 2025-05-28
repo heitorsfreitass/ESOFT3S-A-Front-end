@@ -4,7 +4,7 @@
     
     <div class="game-content">
       <button class="game-button" @click="$emit('trocarTela', 'jogo')">Jogar</button>
-      <button class="game-button" @click="$emit('trocarTela', 'customizar')">Customizar</button>
+      <button class="game-button" @click="$emit('trocarTela', 'historia')">História</button>
       <button class="game-button" @click="$emit('trocarTela', 'creditos')">Créditos</button>
     </div>
   </div>
@@ -15,7 +15,7 @@
 /* mudancas pra essa tela */
 .app-screen {
     flex-direction: column;
-}
+}   
 
 .game-title {
     font-size: 3rem;
