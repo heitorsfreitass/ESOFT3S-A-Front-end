@@ -33,6 +33,12 @@
           <div class="character-selector"></div>
         </div>
       </div>
+      
+      <div class="how-to-play-container" style="text-align:center; margin-bottom: 1.5rem;">
+        <button class="game-button how-to-play-button" @click="mostrarComoJogar = true">
+        COMO JOGAR
+        </button>
+      </div>
 
       <div class="action-buttons">
         <button 
@@ -124,6 +130,27 @@
       </div>
     </div>
 
+    <!-- Popup de Como Jogar-->
+    <transition name="popup">
+    <div v-if="mostrarComoJogar" class="popup-overlay" @click.self="mostrarComoJogar = false">
+      <div class="popup-content">
+        <div class="popup-message" style="margin-bottom: 1rem;">
+          <strong>Como Jogar</strong>
+            </div>
+            <div class="how-to-play-text" style="color: #fff; text-align:left;">
+              <ul>
+                <li>Escolha seu personagem e clique em "Iniciar Jogo".</li>
+                <li>As palavras irão cair na tela. Digite-as corretamente para ganhar pontos.</li>
+                <li>Cada erro ou palavra perdida tira uma vida.</li>
+                <li>Avance de fase ao atingir a pontuação necessária.</li>
+                <li>O jogo termina quando suas vidas acabam.</li>
+              </ul>
+          </div>
+        <button class="game-button" style="margin-top:1rem;" @click="mostrarComoJogar = false">Fechar</button>
+      </div>
+    </div>
+    </transition>
+
     <!-- Popup de mensagem -->
     <transition name="popup">
       <div v-if="mostrarPopup" class="popup-overlay" @click="mostrarPopup = false">
@@ -162,6 +189,7 @@ export default {
     return {
       personagemSelecionado: null, // indice do personagem selecionado
       jogoIniciado: false,         // Controla se o jogo esta iniciado
+      mostrarComoJogar: false,     // mostra popup de como jogar
       pontuacao: 0,                // Pontuaçao atual do jogador
       vidas: 3,                    // Numero de vidas restantes
       palavraDigitada: '',          // Palavra digitada pelo jogador
@@ -971,6 +999,14 @@ export default {
 }
 
 /* Popup */
+.how-to-play-container.top-right {
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  margin-bottom: 0;
+  z-index: 2;
+}
+
 .popup-overlay {
   position: fixed;
   top: 0;
