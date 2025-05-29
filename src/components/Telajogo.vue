@@ -13,7 +13,16 @@
 
     <!-- Tela de seleção de personagem -->
     <div v-if="!jogoIniciado" class="selection-screen">
-      <h1 class="game-title">ESCOLHA SEU PERSONAGEM</h1>
+      
+      <div class="row">
+        <div class="col-10">
+          <h1 class="game-title">ESCOLHA SEU PERSONAGEM</h1>
+        </div>
+        <div class="form-check form-switch col-2 mt-4">
+          <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
+          <label class="form-check-label" for="flexSwitchCheckDefault">Modo Pesadelo</label>
+        </div>
+      </div>
       
       <div class="characters-grid">
         <div
@@ -1106,5 +1115,14 @@ export default {
   .popup-message {
     font-size: 1.2rem;
   }
+}
+
+.form-check-input:checked {
+  background-color: #6e00ff;
+  border-color: #6e00ff;
+}
+
+.form-check-input {
+  accent-color: #6e00ff;
 }
 </style>
