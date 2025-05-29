@@ -164,12 +164,20 @@
 </template>
 
 <script>
-// Importaçaes dos nego
-import cidaoImg from '@/assets/characters/villains/cidao.jpg'
+// Importações
+
+// Professores
+import cidaoImg from '@/assets/characters/villains/cidao.jpeg'
+import morenoImg from '@/assets/characters/villains/moreno.jpeg'
+import ferliniImg from '@/assets/characters/villains/ferlini.jpeg'
+import hugoImg from '@/assets/characters/villains/hugo.jpeg'
+
+// Personagens
 import perinImg from '@/assets/characters/perin.jpg'
 import marcosImg from '@/assets/characters/marcos.jpg'
 import andrezImg from '@/assets/characters/andrez.jpg'
 
+// Sons
 import fase1Msc from '@/assets/sounds/primeira-fase.mp3'
 import fase2Msc from '@/assets/sounds/segunda-fase.mp3'
 
@@ -215,7 +223,9 @@ export default {
       ],
       viloes: [
         {name: 'Cidão, O Abominável (mas nem tanto)', image: cidaoImg, fase: 1, musica: fase1Msc},
-        {name: 'Ferlini, O Gostosinho...', image: cidaoImg, fase: 2, musica: fase2Msc},
+        {name: 'Ferlini, O Gostosinho...', image: ferliniImg, fase: 2, musica: fase2Msc},
+        {name: 'Moreno, O Pequeno Grande Professor...', image: morenoImg, fase: 3, musica: fase2Msc},
+        {name: 'Hugo, O Sr. Bootstrap...', image: hugoImg, fase: 4, musica: fase2Msc},
       ],
       audioElement: null,
       vilaoAtual: null,
