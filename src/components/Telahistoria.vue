@@ -9,7 +9,7 @@
                     <div class="card-body">
                         <figure>
                             <blockquote class="blockquote">
-                                <p>
+                                <p style="color: white;">
                                     Imagine acordar num dia qualquer, indo pra aula com aquele clássico combo: sono
                                     acumulado, café
                                     fraco e esperança mínima. Agora imagine que, do nada, você é sugado por um
@@ -53,17 +53,122 @@
             </div>
         </div>
     </div>
+
+<div class="text-center">
+    <div class="container">
+        <!-- ...existing code... -->
+
+        <!-- Carrossel de Cards -->
+        <!-- Carrossel de Cards -->
+        <div class="container ">
+            <!-- ...seu conteúdo de apresentação... -->
+            <div class="card" style="width:40rem;">
+                <img src="..." class="card-img-top" alt="...">
+                <div class="card-body">
+                    <p style="color: white;" class="card-text">Antes de virar chefão da Unicesumar em Maringá, o Moreno
+                        já era lenda. Com 14 anos, hackeava calculadoras científicas pra rodar Tetris nas aulas de
+                        matemática. Aos 18, recusou uma vaga na NASA. Motivo? Ninguém indentava direito lá.
+
+                        Virou professor não por vocação, mas por puro entretenimento: adorava ver a galera se perdendo
+                        entre while, for e aquele ponto e virgula esquecido que quebra tudo. Entre uma correção e outra,
+                        largava uma piada afiada e um deboche com precisão cirúrgica. Ninguém escapa.
+
+                        Ah, e se ouvir o barulho de uma moto subindo as escadas corre é ele ,Moreno pilota uma moto
+                        preta com farol em forma de ponto e vírgula, cortando o silêncio com o ronco de quem não
+                        indentou, rodou. A lenda diz que, se cruzar com ele nos corredores, só tem uma saída compilar
+                        sem erro — ou aceitar a derrota.
+
+                    </p>
+                </div>
+            </div>
+            <div class="card" style="width:40rem;">
+                <img src="..." class="card-img-top" alt="...">
+                <div class="card-body">
+                    <p style="color: white;" class="card-text">
+                        Dizem que Cidão nasceu segurando um LED e gritando “HIGH!” em vez de chorar. Desde criança,
+                        montava robôs com peças do micro-ondas da avó e controlava o portão da casa com um controle de
+                        PlayStation modificado. Aos 12, já mandava “if digitalRead == LOW” com a mesma naturalidade de
+                        quem pede um pão na padaria.
+
+                        Virou professor porque o laboratório de eletrônica era o único lugar onde ninguém o chamava de
+                        maluco. Mas com o tempo, algo mudou. Cidão enlouqueceu tentando explicar a diferença entre AND e
+                        OR pra uma turma inteira às 7h da manhã. Nunca mais foi o mesmo.
+
+                        Hoje, ele comanda o subsolo da Unicesumar — conhecido como O Labirinto Binário. Um porão
+                        sombrio, cheio de fios desencapados, placas piscando e portas lógicas que se abrem ou fecham
+                        conforme suas decisões. Errou a lógica? O portão não abre. Pisou no fio errado? CURTO. Acertou o
+                        circuito? Pode continuar... por enquanto
+
+                        Cidão não ensina — ele testa.Ah, e cuidado com o braço mecânico que ele mesmo construiu. Se você
+                        errar a tabela verdade de novo... ele aperta o botão vermelho. E ninguém sabe o que aquele botão
+                        faz.
+                    </p>
+                </div>
+            </div>
+            <div class="card "  style="width:40rem;">
+                <img src="..." class="card-img-top" alt="...">
+                <div class="card-body">
+                    <p style="color: white;" class="card-text">
+                        Poucos sabem, mas João Ferlini não começou como professor — ele foi um modelo internacional de
+                        manuais técnicos. Sua beleza estonteante causava travamentos em roteadores Wi-Fi por
+                        aproximação. Depois de perceber que era impossível esconder tanto charme, decidiu usar sua
+                        verdadeira paixão: ensinar Redes de Computadores enquanto distribuía olhares sedutores no
+                        intervalo de cada explicação sobre TCP/IP.
+
+                        Hoje, Ferlini reina absoluto sobre a imponente Fortaleza das Sete Camadas, onde o modelo OSI é
+                        levado tão a sério quanto o skincare dele. Cada camada representa uma parte da fase: física,
+                        enlace, rede, transporte... e em todas, o jogador é testado em lógica, raciocínio rápido e,
+                        claro, resistência à pressão estética.
+
+                        Mas cuidado: não se distraia com o topete impecável ou com os elogios falsamente encorajadores.
+                        Ferlini é implacável: errou a camada? Vai voltar pro início do pacote. E se você confundir
+                        switch com router, ele suspira fundo, dá meia-volta, e te deixa com um lab de cabeamento pra
+                        resolver sozinho.
+                    </p>
+                </div>
+            </div>
+
+
+            <!-- Carrossel de Cards -->
+            <div id="cardCarousel" class="carousel slide mt-4" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <!-- ...seus carousel-item... -->
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#cardCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Anterior</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#cardCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Próximo</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    </div>  
 </template>
 
 <script>
+// Exemplo para remover bloqueio via JavaScript
+document.body.style.overflow = 'auto';
 </script>
 
 <style scoped>
 /* Estilo base */
+.custom-card {
+    width: 100%;
+    max-width: 350px;
+    min-width: 250px;
+    margin-bottom: 1rem;
+    background: rgba(26, 26, 46, 0.8);
+    border: 1px solid #00ffff;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
 .container {
     padding: 2rem;
     background: linear-gradient(135deg, #1a1a2e 100%, #16213e 100%);
-    min-height: 100vh;
     color: white;
 }
 
@@ -93,6 +198,7 @@
 }
 
 .card-body {
+
     padding: 2rem;
 }
 
@@ -159,7 +265,7 @@
 
 .container::before {
     content: '';
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
