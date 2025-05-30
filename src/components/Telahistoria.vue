@@ -47,12 +47,16 @@
                                     boa pra aguentar junto.
                                 </p>
                             </blockquote>
+                            <div class="text-center mt-4">
+                                <button class="game-button" @click="$emit('voltar')">Voltar</button>
+                            </div>
                         </figure>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
 </template>
 
 <script>
@@ -94,12 +98,31 @@
 
 .card-body {
     padding: 2rem;
+    max-height: 400px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #00ffff transparent;
+}
+
+/* Scrollbar para navegadores WebKit */
+.card-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.card-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+    background-color: #00ffff;
+    border-radius: 4px;
 }
 
 .blockquote {
     font-size: 1.1rem;
     line-height: 1.8;
     text-align: justify;
+    color: #00ffff;
 }
 
 .blockquote p {
@@ -157,6 +180,7 @@
     }
 }
 
+/* Background fixo por trás de tudo */
 .container::before {
     content: '';
     position: fixed;
@@ -167,4 +191,25 @@
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     z-index: -1;
 }
+
+.game-button {
+    background-color: #00ffff;
+    color: #1a1a2e;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+}
+
+.game-button:hover { 
+    
+    background-color: #00cccc;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);  
+}
+
+
 </style>
