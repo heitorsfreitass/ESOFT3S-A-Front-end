@@ -7,6 +7,9 @@
       <div class="particle"></div>
     </div>
     
+
+      
+
     <div v-if="mostrarBotaoAudio" class="audio-permission">
       <button @click="ativarAudio">Ativar música</button>
     </div>
@@ -32,13 +35,7 @@
           <div class="character-name">{{ p.name }}</div>
           <div class="character-selector"></div>
         </div>
-      </div>
-      
-      <div class="how-to-play-container" style="text-align:center; margin-bottom: 1.5rem;">
-        <button class="game-button how-to-play-button" @click="mostrarComoJogar = true">
-        COMO JOGAR
-        </button>
-      </div>
+      </div>      
 
       <div class="action-buttons">
         <button 
@@ -53,6 +50,13 @@
           <span>VOLTAR</span>
         </button>
       </div>
+    </div>
+
+    <!--Botao como jogar no canto da tela-->
+    <div class="how-to-play-container">
+        <button class="game-button how-to-play-button" @click="mostrarComoJogar = true">
+          <span>?</span>
+        </button>
     </div>
 
     <!-- Tela do jogo ativo -->
@@ -1008,14 +1012,6 @@ export default {
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* Popup */
-.how-to-play-container.top-right {
-  position: absolute;
-  top: 1.5rem;
-  right: 2rem;
-  margin-bottom: 0;
-  z-index: 2;
-}
 
 .popup-overlay {
   position: fixed;
@@ -1115,6 +1111,60 @@ export default {
   
   .popup-message {
     font-size: 1.2rem;
+  }
+
+  
+
+}
+
+.how-to-play-container{
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    z-index: 10;
+    border-radius: 500px;
+    padding: 0.7em 0.5em;
+  }
+
+  .how-to-play-button{
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    border-radius: 50%;
+    padding: 0;
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    position: relative;
+    overflow: visible;
+  }
+
+  .how-to-play-button::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  background: rgba(110, 0, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0.7;
+  z-index: -1;
+  animation: pulse-bolinha 1.5s infinite;
+}
+
+@keyframes pulse-bolinha {
+  70% {
+    transform: translate(-50%, -50%) scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.2);
+    opacity: 0;
   }
 }
 </style>
