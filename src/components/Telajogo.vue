@@ -6,9 +6,9 @@
       <div class="particle"></div>
       <div class="particle"></div>
     </div>
-    
 
-      
+
+
 
     <div v-if="mostrarBotaoAudio" class="audio-permission">
       <button @click="ativarAudio">Ativar música</button>
@@ -17,15 +17,10 @@
     <!-- Tela de seleção de personagem -->
     <div v-if="!jogoIniciado" class="selection-screen">
       <h1 class="game-title">ESCOLHA SEU PERSONAGEM</h1>
-      
+
       <div class="characters-grid">
-        <div
-          v-for="(p, index) in personagens"
-          :key="index"
-          class="character-card"
-          :class="{ selected: personagemSelecionado === index }"
-          @click="selecionarPersonagem(index)"
-        >
+        <div v-for="(p, index) in personagens" :key="index" class="character-card"
+          :class="{ selected: personagemSelecionado === index }" @click="selecionarPersonagem(index)">
           <div class="character-image-container">
             <img v-if="p.image" :src="p.image" class="character-image" />
             <div v-else class="character-placeholder">
@@ -35,14 +30,10 @@
           <div class="character-name">{{ p.name }}</div>
           <div class="character-selector"></div>
         </div>
-      </div>      
+      </div>
 
       <div class="action-buttons">
-        <button 
-          class="game-button start-button" 
-          @click="iniciarJogo" 
-          :disabled="personagemSelecionado === null"
-        >
+        <button class="game-button start-button" @click="iniciarJogo" :disabled="personagemSelecionado === null">
           <span>INICIAR JOGO</span>
           <div class="button-glow"></div>
         </button>
@@ -54,9 +45,9 @@
 
     <!--Botao como jogar no canto da tela-->
     <div class="how-to-play-container">
-        <button class="game-button how-to-play-button" @click="mostrarComoJogar = true">
-          <span>?</span>
-        </button>
+      <button class="game-button how-to-play-button" @click="mostrarComoJogar = true">
+        <span>?</span>
+      </button>
     </div>
 
     <!-- Tela do jogo ativo -->
@@ -71,12 +62,12 @@
           <div class="player-details">
             <div class="player-name">{{ personagens[personagemSelecionado].name }}</div>
             <div class="health-bar">
-              <div class="health-fill" :style="{ width: (vidas/3)*100 + '%' }"></div>
+              <div class="health-fill" :style="{ width: (vidas / 3) * 100 + '%' }"></div>
               <div class="health-text">{{ vidas }} ❤️</div>
             </div>
           </div>
         </div>
-        
+
         <div class="game-stats">
           <div class="stat">
             <div class="stat-label">PONTOS</div>
@@ -87,7 +78,7 @@
             <div class="stat-value">{{ faseAtual }}</div>
           </div>
         </div>
-        
+
         <div class="villain-container" v-if="vilaoAtual">
           <div class="villain-avatar-container">
             <img :src="vilaoAtual.image" class="villain-avatar">
@@ -100,17 +91,12 @@
       <!-- Área do jogo -->
       <div class="game-area" ref="areaJogo">
         <div class="falling-words-container">
-          <div
-            v-for="(palavra, index) in palavrasAtivas"
-            :key="index"
-            class="falling-word"
-            :style="{
-              top: palavra.y + 'px',
-              left: palavra.x + 'px',
-              color: palavra.cor || getRandomColor(),
-              filter: `drop-shadow(0 0 5px ${palavra.cor || getRandomColor()})`
-            }"
-          >
+          <div v-for="(palavra, index) in palavrasAtivas" :key="index" class="falling-word" :style="{
+            top: palavra.y + 'px',
+            left: palavra.x + 'px',
+            color: palavra.cor || getRandomColor(),
+            filter: `drop-shadow(0 0 5px ${palavra.cor || getRandomColor()})`
+          }">
             {{ palavra.texto }}
           </div>
         </div>
@@ -119,16 +105,8 @@
       <!-- Controles -->
       <div class="game-controls">
         <div class="input-container">
-          <input
-            type="text"
-            v-model="palavraDigitada"
-            @input="verificarPalavra"
-            @keydown.enter="limparInput"
-            placeholder="Digite a palavra aqui..."
-            class="game-input"
-            ref="inputPalavra"
-            autofocus
-          />
+          <input type="text" v-model="palavraDigitada" @input="verificarPalavra" @keydown.enter="limparInput"
+            placeholder="Digite a palavra aqui..." class="game-input" ref="inputPalavra" autofocus />
           <div class="input-border"></div>
         </div>
       </div>
@@ -136,23 +114,23 @@
 
     <!-- Popup de Como Jogar-->
     <transition name="popup">
-    <div v-if="mostrarComoJogar" class="popup-overlay" @click.self="mostrarComoJogar = false">
-      <div class="popup-content">
-        <div class="popup-message" style="margin-bottom: 1rem;">
-          <strong>Como Jogar</strong>
-            </div>
-            <div class="how-to-play-text" style="color: #fff; text-align:left;">
-              <ul>
-                <li>Escolha seu personagem e clique em "Iniciar Jogo".</li>
-                <li>As palavras irão cair na tela. Digite-as corretamente para ganhar pontos.</li>
-                <li>Cada erro ou palavra perdida tira uma vida.</li>
-                <li>Avance de fase ao atingir a pontuação necessária.</li>
-                <li>O jogo termina quando suas vidas acabam.</li>
-              </ul>
+      <div v-if="mostrarComoJogar" class="popup-overlay" @click.self="mostrarComoJogar = false">
+        <div class="popup-content">
+          <div class="popup-message" style="margin-bottom: 1rem;">
+            <strong>Como Jogar</strong>
           </div>
-        <button class="game-button" style="margin-top:1rem;" @click="mostrarComoJogar = false">Fechar</button>
+          <div class="how-to-play-text" style="color: #fff; text-align:left;">
+            <ul>
+              <li>Escolha seu personagem e clique em "Iniciar Jogo".</li>
+              <li>As palavras irão cair na tela. Digite-as corretamente para ganhar pontos.</li>
+              <li>Cada erro ou palavra perdida tira uma vida.</li>
+              <li>Avance de fase ao atingir a pontuação necessária.</li>
+              <li>O jogo termina quando suas vidas acabam.</li>
+            </ul>
+          </div>
+          <button class="game-button" style="margin-top:1rem;" @click="mostrarComoJogar = false">Fechar</button>
+        </div>
       </div>
-    </div>
     </transition>
 
     <!-- Popup de mensagem -->
@@ -226,10 +204,10 @@ export default {
         { name: 'Bernardo', type: 'dev' }
       ],
       viloes: [
-        {name: 'Cidão, O Abominável (mas nem tanto)', image: cidaoImg, fase: 1, musica: fase1Msc},
-        {name: 'Ferlini, O Gostosinho...', image: ferliniImg, fase: 2, musica: fase2Msc},
-        {name: 'Moreno, O Pequeno Grande Professor...', image: morenoImg, fase: 3, musica: fase2Msc},
-        {name: 'Hugo, O Sr. Bootstrap...', image: hugoImg, fase: 4, musica: fase2Msc},
+        { name: 'Cidão, O Abominável (mas nem tanto)', image: cidaoImg, fase: 1, musica: fase1Msc },
+        { name: 'Ferlini, O Gostosinho...', image: ferliniImg, fase: 2, musica: fase2Msc },
+        { name: 'Moreno, O Pequeno Grande Professor...', image: morenoImg, fase: 3, musica: fase2Msc },
+        { name: 'Hugo, O Sr. Bootstrap...', image: hugoImg, fase: 4, musica: fase2Msc },
       ],
       audioElement: null,
       vilaoAtual: null,
@@ -280,7 +258,7 @@ export default {
       this.palavraDigitada = ''
       this.palavrasAtivas = []
 
-      
+
       this.$nextTick(() => {
         this.atualizarDimensoesAreaJogo()
         this.carregarFase(this.faseAtual)
@@ -336,7 +314,7 @@ export default {
         })
       }, 2000) // Intervalo entre palavras
 
-    
+
       this.intervaloAnimacao = requestAnimationFrame(this.animarPalavras)
     },
 
@@ -350,7 +328,7 @@ export default {
       // Atualiza posição de cada palavra
       this.palavrasAtivas.forEach(palavra => {
         palavra.y += palavra.velocidade * this.velocidadeBase
-        
+
         // Verifica se a palavra ainda está na tela
         if (palavra.y < this.areaJogo.height) {
           novasPalavrasAtivas.push(palavra)
@@ -358,7 +336,7 @@ export default {
           // Se a palavra saiu da tela, remove uma vida
           perdeuVida = true
           this.vidas--
-          
+
           // Verifica se o jogador perdeu
           if (this.vidas <= 0) {
             this.fimDeJogo(false)
@@ -377,11 +355,11 @@ export default {
     /**
      * Verifica se a palavra digitada está na lista de palavras ativas
      */
-    verificarPalavra() { // Ela agora verifica digitação em tempo real, sem precisar apertar 'enter' para enviar
-      const palavraLower = this.palavraDigitada.toLowerCase()
+    verificarPalavra() {
+      const palavraLower = this.palavraDigitada.toLowerCase();
 
       // Encontra a primeira palavra que começa com o texto digitado
-      const palavraCorrespondente = this.palavrasAtivas.find(p => 
+      const palavraCorrespondente = this.palavrasAtivas.find(p =>
         p.texto.toLowerCase().startsWith(palavraLower)
       );
 
@@ -391,20 +369,21 @@ export default {
         setTimeout(() => {
           this.palavrasAtivas = this.palavrasAtivas.filter(p => p !== palavraCorrespondente);
         }, 200);
-        
-        this.pontuacao++;
+
+        // Soma pontos por caractere da palavra acertada
+        this.pontuacao += palavraCorrespondente.texto.length;
         this.palavraDigitada = ''; // Reseta o input depois de acertar
-        
-        // Aumenta dificuldade a cada 5 acertos
-        if (this.pontuacao % 5 === 0) {
+
+        // Aumenta dificuldade a cada 25 pontos (ajuste se quiser)
+        if (this.pontuacao % 25 === 0) {
           this.velocidadeBase += 0.2;
           clearInterval(this.intervaloPalavras);
-          const novoIntervalo = Math.max(500, 2000 - (this.pontuacao * 50));
+          const novoIntervalo = Math.max(500, 2000 - (this.pontuacao * 2.5));
           this.intervaloPalavras = setInterval(this.adicionarPalavra, novoIntervalo);
         }
-        
-        // Avança de fase ao atingir pontuação
-        if (this.pontuacao >= 20) {
+
+        // Avança de fase ao atingir pontuação (ajuste o valor conforme desejar)
+        if (this.pontuacao >= 100) {
           this.avancarFase();
         }
       } else if (!palavraCorrespondente && this.palavraDigitada) {
@@ -439,10 +418,10 @@ export default {
     avancarFase() {
       clearInterval(this.intervaloPalavras)
       cancelAnimationFrame(this.intervaloAnimacao)
-      
+
       this.faseAtual++
-      
-      
+
+
       if (this.palavrasPorFase['fase' + this.faseAtual]) {
         setTimeout(() => {
           //alert(`Fase ${this.faseAtual - 1} completada! Iniciando fase ${this.faseAtual}...`)
@@ -454,7 +433,7 @@ export default {
           this.iniciarAnimacaoPalavras()
         }, 500)
       } else {
-        
+
         this.fimDeJogo(true)
       }
     },
@@ -470,17 +449,17 @@ export default {
       // se ganhar, som de vitoria, se perder, som de game over
       if (vitoria && this.sounds.victory) {
         this.tocarSom(this.sounds.victory);
-      } else if (!vitoria &&  this.sounds.gameOver) {
+      } else if (!vitoria && this.sounds.gameOver) {
         this.tocarSom(this.sounds.gameOver);
       }
 
       this.jogoIniciado = false
-      
+
       setTimeout(() => {
         /*alert(vitoria 
           ? 'Parabéns! Você completou todas as fases!' 
           : 'Game Over! Tente novamente.') */
-          this.mostrarPopupTemporario('Game over!')
+        this.mostrarPopupTemporario('Game over!')
       }, 1000)
     },
 
@@ -499,7 +478,7 @@ export default {
       try {
         this.audioElement = new Audio(musica);
         this.audioElement.loop = true;
-        
+
         this.audioElement.addEventListener('error', () => {
           console.error("Erro ao carregar áudio");
           this.audioElement = null;
@@ -507,7 +486,7 @@ export default {
 
         // Aqui inicia a reprodução
         const playPromise = this.audioElement.play();
-    
+
         if (playPromise !== undefined) {
           playPromise.catch(error => {
             console.log("Reprodução automática prevenida:", error);
@@ -515,8 +494,8 @@ export default {
             this.mostrarBotaoAudio = true;
           });
         }
-        
-      } catch(error) {
+
+      } catch (error) {
         console.error("Erro ao iniciar musica: ", error);
       }
     },
@@ -536,7 +515,7 @@ export default {
       } catch (error) {
         console.error("Erro ao carregar audio: ", error);
       }
-    }, 
+    },
 
     ativarAudio() {
       if (this.vilaoAtual && this.vilaoAtual.musica) {
@@ -555,7 +534,7 @@ export default {
       }, 3000);
     },
 
-    limparInput(){ //função para limpar o input quando aperta enter
+    limparInput() { //função para limpar o input quando aperta enter
       this.palavraDigitada = '';
     },
 
@@ -619,9 +598,17 @@ export default {
 }
 
 @keyframes float {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  50% { transform: translate(50px, 50px) rotate(180deg); }
-  100% { transform: translate(0, 0) rotate(360deg); }
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  50% {
+    transform: translate(50px, 50px) rotate(180deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(360deg);
+  }
 }
 
 /* Tela de seleção */
@@ -960,8 +947,13 @@ export default {
 }
 
 @keyframes float-text {
-  from { transform: translateY(0); }
-  to { transform: translateY(-5px); }
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-5px);
+  }
 }
 
 /* Controles */
@@ -1067,15 +1059,23 @@ export default {
 }
 
 @keyframes progress-bar {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
 
 /* Transições */
-.popup-enter-active, .popup-leave-active {
+.popup-enter-active,
+.popup-leave-active {
   transition: opacity 0.3s;
 }
-.popup-enter, .popup-leave-to {
+
+.popup-enter,
+.popup-leave-to {
   opacity: 0;
 }
 
@@ -1086,63 +1086,65 @@ export default {
     gap: 1rem;
     padding: 1rem;
   }
-  
+
   .characters-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .action-buttons {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .game-button {
     width: 100%;
   }
-  
-  .player-info, .game-stats, .villain-container {
+
+  .player-info,
+  .game-stats,
+  .villain-container {
     width: 100%;
     justify-content: center;
   }
-  
+
   .popup-content {
     padding: 1.5rem;
   }
-  
+
   .popup-message {
     font-size: 1.2rem;
   }
 
-  
+
 
 }
 
-.how-to-play-container{
-    position: absolute;
-    top: 24px;
-    right: 32px;
-    z-index: 10;
-    border-radius: 500px;
-    padding: 0.7em 0.5em;
-  }
+.how-to-play-container {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  z-index: 10;
+  border-radius: 500px;
+  padding: 0.7em 0.5em;
+}
 
-  .how-to-play-button{
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    min-height: 48px;
-    border-radius: 50%;
-    padding: 0;
-    aspect-ratio: 1/1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    position: relative;
-    overflow: visible;
-  }
+.how-to-play-button {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 50%;
+  padding: 0;
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  position: relative;
+  overflow: visible;
+}
 
-  .how-to-play-button::after {
+.how-to-play-button::after {
   content: '';
   position: absolute;
   left: 50%;
@@ -1162,6 +1164,7 @@ export default {
     transform: translate(-50%, -50%) scale(2.2);
     opacity: 0;
   }
+
   100% {
     transform: translate(-50%, -50%) scale(2.2);
     opacity: 0;
