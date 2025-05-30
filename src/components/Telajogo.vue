@@ -11,19 +11,26 @@
       <button @click="ativarAudio">Ativar música</button>
     </div>
 
-    <!-- Tela de seleção de personagem -->
-    <div v-if="!jogoIniciado" class="selection-screen">
-      
+    <!-- troca entre tela normal e pesadelo -->
+    <TelaJogoPesadelo
+      v-if="!jogoIniciado && modoPesadelo"
+      @voltar="voltarModoNormal"
+    />
+    <div v-else-if="!jogoIniciado" class="selection-screen">
       <div class="row">
         <div class="col-10">
           <h1 class="game-title">ESCOLHA SEU PERSONAGEM</h1>
         </div>
         <div class="form-check form-switch col-2 mt-4">
-          <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="flexSwitchCheckDefault"
+            v-model="modoPesadelo"
+          >
           <label class="form-check-label" for="flexSwitchCheckDefault">Modo Pesadelo</label>
         </div>
       </div>
-      
       <div class="characters-grid">
         <div
           v-for="(p, index) in personagens"
@@ -42,13 +49,11 @@
           <div class="character-selector"></div>
         </div>
       </div>
-      
       <div class="how-to-play-container" style="text-align:center; margin-bottom: 1.5rem;">
         <button class="game-button how-to-play-button" @click="mostrarComoJogar = true">
-        COMO JOGAR
+          COMO JOGAR
         </button>
       </div>
-
       <div class="action-buttons">
         <button 
           class="game-button start-button" 
@@ -141,23 +146,23 @@
 
     <!-- Popup de Como Jogar-->
     <transition name="popup">
-    <div v-if="mostrarComoJogar" class="popup-overlay" @click.self="mostrarComoJogar = false">
-      <div class="popup-content">
-        <div class="popup-message" style="margin-bottom: 1rem;">
-          <strong>Como Jogar</strong>
-            </div>
-            <div class="how-to-play-text" style="color: #fff; text-align:left;">
-              <ul>
-                <li>Escolha seu personagem e clique em "Iniciar Jogo".</li>
-                <li>As palavras irão cair na tela. Digite-as corretamente para ganhar pontos.</li>
-                <li>Cada erro ou palavra perdida tira uma vida.</li>
-                <li>Avance de fase ao atingir a pontuação necessária.</li>
-                <li>O jogo termina quando suas vidas acabam.</li>
-              </ul>
+      <div v-if="mostrarComoJogar" class="popup-overlay" @click.self="mostrarComoJogar = false">
+        <div class="popup-content">
+          <div class="popup-message" style="margin-bottom: 1rem;">
+            <strong>Como Jogar</strong>
           </div>
-        <button class="game-button" style="margin-top:1rem;" @click="mostrarComoJogar = false">Fechar</button>
+          <div class="how-to-play-text" style="color: #fff; text-align:left;">
+            <ul>
+              <li>Escolha seu personagem e clique em "Iniciar Jogo".</li>
+              <li>As palavras irão cair na tela. Digite-as corretamente para ganhar pontos.</li>
+              <li>Cada erro ou palavra perdida tira uma vida.</li>
+              <li>Avance de fase ao atingir a pontuação necessária.</li>
+              <li>O jogo termina quando suas vidas acabam.</li>
+            </ul>
+          </div>
+          <button class="game-button" style="margin-top:1rem;" @click="mostrarComoJogar = false">Fechar</button>
+        </div>
       </div>
-    </div>
     </transition>
 
     <!-- Popup de mensagem -->
@@ -187,6 +192,8 @@ import victory from '@/assets/sounds/victory.mp3'
 
 import palavrasPorFase from '@/assets/palavras.json'
 
+import TelaJogoPesadelo from './TelaJogoPesadelo.vue'
+
 // Cores de feedback para acertos e erros
 const CORES_FEEDBACK = {
   acerto: '#00ff00',
@@ -194,22 +201,24 @@ const CORES_FEEDBACK = {
 }
 
 export default {
+  components: {TelaJogoPesadelo},
   data() {
     return {
       personagemSelecionado: null, // indice do personagem selecionado
       jogoIniciado: false,         // Controla se o jogo esta iniciado
+      modoPesadelo: false,         //Controla se o modo pesadelo esta ativado!!
       mostrarComoJogar: false,     // mostra popup de como jogar
       pontuacao: 0,                // Pontuaçao atual do jogador
       vidas: 3,                    // Numero de vidas restantes
-      palavraDigitada: '',          // Palavra digitada pelo jogador
-      palavrasAtivas: [],           // Array de palavras ativas na tela
+      palavraDigitada: '',         // Palavra digitada pelo jogador
+      palavrasAtivas: [],          // Array de palavras ativas na tela
       velocidadeBase: 1,           // Velocidade base das palavras
       faseAtual: 1,                // Fase atual do jogo
-      palavrasPorFase,              // dados das palavras por fase
-      listaPalavras: [],            // Lista de palavras da fase atual
-      intervaloPalavras: null,      // Referencia do intervalo de geração de palavras
-      intervaloAnimacao: null,      // referencia da animaçao frame a frame
-      areaJogo: {                   // Dimensoes da área de jogo
+      palavrasPorFase,             // dados das palavras por fase
+      listaPalavras: [],           // Lista de palavras da fase atual
+      intervaloPalavras: null,     // Referencia do intervalo de geração de palavras
+      intervaloAnimacao: null,     // referencia da animaçao frame a frame
+      areaJogo: {                  // Dimensoes da área de jogo
         width: 800,
         height: 500
       },
@@ -257,6 +266,11 @@ export default {
      */
     selecionarPersonagem(index) {
       this.personagemSelecionado = index
+    },
+
+    voltarModoNormal() {
+    this.modoPesadelo = false;
+    this.jogoIniciado = false; // <-- garanta que está false!
     },
 
     /**
@@ -563,7 +577,6 @@ export default {
 }
 </script>
 
-<!-- CSS -->
 <style scoped>
 /* Container principal */
 .app-screen {
@@ -1120,9 +1133,15 @@ export default {
 .form-check-input:checked {
   background-color: #6e00ff;
   border-color: #6e00ff;
+  box-shadow: 0 0 0 3px #00ffcc, 0 0 10px #6e00ff;
 }
 
 .form-check-input {
   accent-color: #6e00ff;
+}
+
+.form-check-input:hover, .form-check-input:focus-visible {
+  border-color: #00ffcc !important;
+  box-shadow: 0 0 0 3px #00ffcc, 0 0 10px #00ffcc;
 }
 </style>
