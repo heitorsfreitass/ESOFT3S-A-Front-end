@@ -143,6 +143,30 @@
       </div>
     </transition>
   </div>
+
+  <!--Popup de GameOver (melhorado)-->
+  <transition name="popup">
+    <div v-if="mostrarTelaGameOver" class="popup-overlay">
+      <div class="popup-content">
+        <div class="popup-message" style="margin-bottom: 1rem;">
+          <strong>{{ resultadoFinal.venceu ? 'Parabéns! Você venceu!' : 'Game Over!' }}</strong>
+        </div>
+        <div style="color: #fff; text-align:left; margin-bottom: 1rem;">
+          <ul>
+            <li><strong>Pontos totais:</strong> {{ resultadoFinal.pontos }}</li>
+            <li><strong>Fase atingida:</strong> {{ resultadoFinal.fase }}</li>
+            <li v-if="resultadoFinal.venceu">Você completou todas as fases!</li>
+            <li v-else>Que tal tentar de novo para superar sua pontuação?</li>
+          </ul>
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+          <button class="game-button" @click="jogarNovamente">Jogar Novamente</button>
+          <button class="game-button" @click="voltarTelaInicial">Tela Inicial</button>
+        </div>
+      </div>
+    </div>
+  </transition>
+
 </template>
 
 <script>
@@ -177,15 +201,17 @@ const CORES_FEEDBACK = {
 export default {
   data() {
     return {
-      personagemSelecionado: null, // indice do personagem selecionado
-      jogoIniciado: false,         // Controla se o jogo esta iniciado
-      mostrarComoJogar: false,     // mostra popup de como jogar
-      pontuacao: 0,                // Pontuaçao atual do jogador
-      vidas: 3,                    // Numero de vidas restantes
+      personagemSelecionado: null,  // indice do personagem selecionado
+      jogoIniciado: false,          // Controla se o jogo esta iniciado
+      mostrarComoJogar: false,      // mostra popup de como jogar
+      pontuacao: 0,                 // Pontuaçao atual do jogador
+      pontuacaoPorFase: [],         // Array para guardar a pontuação de cada fase
+      pontuacaoFaseAtual: 0,        // Pontuação da fase atual
+      vidas: 3,                     // Numero de vidas restantes
       palavraDigitada: '',          // Palavra digitada pelo jogador
       palavrasAtivas: [],           // Array de palavras ativas na tela
-      velocidadeBase: 1,           // Velocidade base das palavras
-      faseAtual: 1,                // Fase atual do jogo
+      velocidadeBase: 1,            // Velocidade base das palavras
+      faseAtual: 1,                 // Fase atual do jogo
       palavrasPorFase,              // dados das palavras por fase
       listaPalavras: [],            // Lista de palavras da fase atual
       intervaloPalavras: null,      // Referencia do intervalo de geração de palavras
@@ -194,6 +220,7 @@ export default {
         width: 800,
         height: 500
       },
+
       // Lista dos personagens disponiveis
       personagens: [
         { name: 'Perin', type: 'dev', image: perinImg },
@@ -218,7 +245,15 @@ export default {
       },
       mostrarPopup: false,
       mensagemPopup: '',
+      mostrarTelaGameOver: false,
+      resultadoFinal: {
+        pontos: 0,
+        fase: 1,
+        venceu: false
+      },
+
     }
+
   },
 
   // Hook(funcao) chamado quando o componente e montado
@@ -372,6 +407,7 @@ export default {
 
         // Soma pontos por caractere da palavra acertada
         this.pontuacao += palavraCorrespondente.texto.length;
+        this.pontuacaoFaseAtual += palavraCorrespondente.texto.length;
         this.palavraDigitada = ''; // Reseta o input depois de acertar
 
         // Aumenta dificuldade a cada 25 pontos (ajuste se quiser)
@@ -383,7 +419,7 @@ export default {
         }
 
         // Avança de fase ao atingir pontuação (ajuste o valor conforme desejar)
-        if (this.pontuacao >= 100) {
+        if (this.pontuacaoFaseAtual >= 100) {
           this.avancarFase();
         }
       } else if (!palavraCorrespondente && this.palavraDigitada) {
@@ -408,7 +444,8 @@ export default {
         texto,
         y: 0,
         x: Math.random() * (this.areaJogo.width - 100),
-        velocidade: 0.5 + Math.random() * (0.5 + this.velocidadeBase * 0.3)
+        // Diminua os valores de velocidade para ficar mais lento:
+        velocidade: 0.2 + Math.random() * (0.2 + this.velocidadeBase * 0.1)
       })
     },
 
@@ -419,22 +456,29 @@ export default {
       clearInterval(this.intervaloPalavras)
       cancelAnimationFrame(this.intervaloAnimacao)
 
-      this.faseAtual++
+      this.pontuacaoPorFase.push(this.pontuacaoFaseAtual);
+      this.pontuacaoFaseAtual = 0; // <-- ZERA AQUI
 
+      this.faseAtual++
 
       if (this.palavrasPorFase['fase' + this.faseAtual]) {
         setTimeout(() => {
-          //alert(`Fase ${this.faseAtual - 1} completada! Iniciando fase ${this.faseAtual}...`)
           this.mostrarPopupTemporario(`Fase ${this.faseAtual - 1} completada! Iniciando fase ${this.faseAtual}...`);
-          this.pontuacao = 0
           this.velocidadeBase = 1 + (this.faseAtual * 0.3)
           this.palavrasAtivas = []
           this.carregarFase(this.faseAtual)
           this.iniciarAnimacaoPalavras()
         }, 500)
       } else {
-
-        this.fimDeJogo(true)
+        // Só finaliza o jogo quando todas as palavras ativas sumirem
+        const checarFim = () => {
+          if (this.palavrasAtivas.length === 0) {
+            this.fimDeJogo(true)
+          } else {
+            setTimeout(checarFim, 300)
+          }
+        }
+        checarFim()
       }
     },
 
@@ -443,8 +487,8 @@ export default {
      * @param {boolean} vitoria - Indica se o jogador venceu
      */
     fimDeJogo(vitoria) {
-      this.limparIntervalos()
-      this.pararMusica()
+      this.limparIntervalos();
+      this.pararMusica();
 
       // se ganhar, som de vitoria, se perder, som de game over
       if (vitoria && this.sounds.victory) {
@@ -453,14 +497,19 @@ export default {
         this.tocarSom(this.sounds.gameOver);
       }
 
-      this.jogoIniciado = false
+      this.jogoIniciado = false;
 
-      setTimeout(() => {
-        /*alert(vitoria 
-          ? 'Parabéns! Você completou todas as fases!' 
-          : 'Game Over! Tente novamente.') */
-        this.mostrarPopupTemporario('Game over!')
-      }, 1000)
+      // Salva o resultado final
+      this.resultadoFinal = {
+        pontos: this.pontuacao,
+        fase: this.faseAtual,
+        venceu: vitoria
+      };
+      //salva a pontuacao final para exibir ao usuario
+      if (this.pontuacaoFaseAtual > 0) {
+        this.pontuacaoPorFase.push(this.pontuacaoFaseAtual);
+      }
+      this.mostrarTelaGameOver = true;
     },
 
     /**
@@ -541,6 +590,30 @@ export default {
     getRandomColor() {
       const colors = ['#00ffcc', '#ff00ff', '#6e00ff', '#ff3860', '#2afc98'];
       return colors[Math.floor(Math.random() * colors.length)];
+    },
+
+    jogarNovamente() {
+      this.mostrarTelaGameOver = false;
+      this.jogoIniciado = false;
+      this.pontuacao = 0;
+      this.vidas = 3;
+      this.faseAtual = 1;
+      this.palavraDigitada = '';
+      this.palavrasAtivas = [];
+      this.vilaoAtual = null;
+      // Volta para a tela de seleção de personagem
+    },
+    voltarTelaInicial() {
+      this.mostrarTelaGameOver = false;
+      this.jogoIniciado = false;
+      this.pontuacao = 0;
+      this.vidas = 3;
+      this.faseAtual = 1;
+      this.palavraDigitada = '';
+      this.palavrasAtivas = [];
+      this.vilaoAtual = null;
+      this.personagemSelecionado = null;
+      this.$emit('voltar'); // Emite evento para o componente pai, se necessário
     },
 
   }
