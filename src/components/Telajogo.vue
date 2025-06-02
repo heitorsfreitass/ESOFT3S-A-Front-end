@@ -514,7 +514,27 @@ export default {
 
     fecharAjuda() {
       this.mostrarComoJogar = false
-    }
+    },
+
+    jogarNovamente() {
+      this.mostrarTelaGameOver = false;
+      this.iniciarJogo();
+    },
+
+    voltarTelaInicial() {
+      this.mostrarTelaGameOver = false;
+      this.jogoIniciado = false;
+      this.pontuacao = 0;
+      this.vidas = 3;
+      this.faseAtual = 1;
+      this.palavraDigitada = '';
+      this.palavrasAtivas = [];
+      this.vilaoAtual = null;
+      this.personagemSelecionado = null;
+      this.limparIntervalos();
+      this.pararMusica();
+      this.$emit('voltar');
+    },
   }
 }
 </script>
