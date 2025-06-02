@@ -7,11 +7,15 @@
       <div class="particle"></div>
     </div>
 
-
-
-
     <div v-if="mostrarBotaoAudio" class="audio-permission">
-      <button @click="ativarAudio">Ativar música</button>
+      <button
+        v-if="audioElement"
+        class="game-button"
+        @click="pausarOuRetomarMusica"
+        style="margin-left: 1rem;"
+      >
+        {{ audioElement.paused ? 'Ligar Música' : 'Desligar Música' }}
+      </button>
     </div>
 
     <!-- Tela de seleção de personagem -->
