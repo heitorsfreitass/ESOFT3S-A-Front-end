@@ -16,6 +16,11 @@
 
     <!-- Tela de seleção de personagem -->
     <div v-if="!jogoIniciado" class="selection-screen">
+      <div class="how-to-play-container">
+        <button class="game-button how-to-play-button" @click="mostrarComoJogar = true" aria-label="Como Jogar">
+          <span>?</span>
+        </button>
+      </div>
       <h1 class="game-title">ESCOLHA SEU PERSONAGEM</h1>
 
       <div class="characters-grid">
@@ -45,7 +50,7 @@
 
     <!--Botao como jogar no canto da tela-->
     <div class="how-to-play-container">
-      <button class="game-button how-to-play-button" @click="mostrarComoJogar = true">
+      <button class="game-button how-to-play-button" @click="mostrarComoJogar = true" aria-label="Como Jogar">
         <span>?</span>
       </button>
     </div>
@@ -596,12 +601,14 @@ export default {
       this.mostrarTelaGameOver = false;
       this.jogoIniciado = false;
       this.pontuacao = 0;
+      this.pontuacaoFaseAtual = 0;
+      this.pontuacaoPorFase = [];
       this.vidas = 3;
       this.faseAtual = 1;
       this.palavraDigitada = '';
       this.palavrasAtivas = [];
       this.vilaoAtual = null;
-      // Volta para a tela de seleção de personagem
+      this.personagemSelecionado = null;
     },
     voltarTelaInicial() {
       this.mostrarTelaGameOver = false;
@@ -1188,8 +1195,10 @@ export default {
     font-size: 1.2rem;
   }
 
-
-
+  .how-to-play-container {
+    top: 12px;
+    right: 12px;
+  }
 }
 
 .how-to-play-container {
@@ -1230,6 +1239,11 @@ export default {
   opacity: 0.7;
   z-index: -1;
   animation: pulse-bolinha 1.5s infinite;
+}
+
+.how-to-play-button:hover {
+  background: linear-gradient(45deg, var(--accent), var(--primary));
+  color: #fff;
 }
 
 @keyframes pulse-bolinha {
