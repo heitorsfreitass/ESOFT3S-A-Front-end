@@ -215,7 +215,7 @@ export default {
       vidas: 3,                     // Numero de vidas restantes
       palavraDigitada: '',          // Palavra digitada pelo jogador
       palavrasAtivas: [],           // Array de palavras ativas na tela
-      velocidadeBase: 1,            // Velocidade base das palavras
+      velocidadeBase: 0.6,          // Velocidade base das palavras (antes 1)
       faseAtual: 1,                 // Fase atual do jogo
       palavrasPorFase,              // dados das palavras por fase
       listaPalavras: [],            // Lista de palavras da fase atual
@@ -256,9 +256,7 @@ export default {
         fase: 1,
         venceu: false
       },
-
     }
-
   },
 
   // Hook(funcao) chamado quando o componente e montado
@@ -294,16 +292,20 @@ export default {
       this.pontuacao = 0
       this.vidas = 3
       this.faseAtual = 1
-      this.velocidadeBase = 1
+      
+      // >>> ALTERAÇÃO AQUI: também resetamos para a velocidade base mais lenta
+      this.velocidadeBase = 0.6
+      
       this.palavraDigitada = ''
       this.palavrasAtivas = []
-
+      this.pontuacaoPorFase = []
+      this.pontuacaoFaseAtual = 0
 
       this.$nextTick(() => {
         this.atualizarDimensoesAreaJogo()
         this.carregarFase(this.faseAtual)
         this.iniciarAnimacaoPalavras()
-        this.$refs.inputPalavra.focus()
+        if(this.$refs.inputPalavra) this.$refs.inputPalavra.focus()
       })
     },
 
@@ -342,20 +344,10 @@ export default {
 
       // Configura intervalo para adicionar novas palavras
       this.intervaloPalavras = setInterval(() => {
-        if (this.listaPalavras.length === 0) return
-
-        // Seleciona palavra aleatorias da lista
-        const texto = this.listaPalavras[Math.floor(Math.random() * this.listaPalavras.length)]
-        this.palavrasAtivas.push({
-          texto,
-          y: 0, // Posição Y inicial (topo)
-          x: Math.random() * (this.areaJogo.width - 100), // Posição X aleatoria
-          velocidade: 0.5 + Math.random() * 0.5 // velocidade aleatoria
-        })
+        this.adicionarPalavra()
       }, 2000) // Intervalo entre palavras
 
-
-      this.intervaloAnimacao = requestAnimationFrame(this.animarPalavras)
+      this.intervaloAnimacao = requestAnimationFrame(() => this.animarPalavras())
     },
 
     /**
@@ -388,7 +380,7 @@ export default {
 
       // Continua a animação se o jogo está ativo
       if (this.jogoIniciado) {
-        this.intervaloAnimacao = requestAnimationFrame(this.animarPalavras)
+        this.intervaloAnimacao = requestAnimationFrame(() => this.animarPalavras())
       }
     },
 
@@ -415,217 +407,119 @@ export default {
         this.pontuacaoFaseAtual += palavraCorrespondente.texto.length;
         this.palavraDigitada = ''; // Reseta o input depois de acertar
 
-        // Aumenta dificuldade a cada 25 pontos (ajuste se quiser)
+        // diminui o incremento para tornar a velocidade crescente mais suave
         if (this.pontuacao % 25 === 0) {
-          this.velocidadeBase += 0.2;
+          this.velocidadeBase += 0.1; // antes era 0.2
           clearInterval(this.intervaloPalavras);
-          const novoIntervalo = Math.max(500, 2000 - (this.pontuacao * 2.5));
-          this.intervaloPalavras = setInterval(this.adicionarPalavra, novoIntervalo);
+          const novoIntervalo = Math.max(700, 2000 - this.velocidadeBase * 400);
+          this.intervaloPalavras = setInterval(() => {
+            this.adicionarPalavra()
+          }, novoIntervalo);
         }
 
-        // Avança de fase ao atingir pontuação (ajuste o valor conforme desejar)
-        if (this.pontuacaoFaseAtual >= 100) {
-          this.avancarFase();
-        }
-      } else if (!palavraCorrespondente && this.palavraDigitada) {
-        // Erro: feedback visual no input
-        this.$refs.inputPalavra.style.borderColor = CORES_FEEDBACK.erro;
-        setTimeout(() => {
-          if (this.$refs.inputPalavra) {
-            this.$refs.inputPalavra.style.borderColor = '#00ffff';
+        // Verifica se acabou a fase (ex: pontos >= 100 ou acabou lista)
+        if (this.pontuacaoFaseAtual >= 100 || this.palavrasAtivas.length === 0) {
+          this.pontuacaoPorFase.push(this.pontuacaoFaseAtual);
+          this.pontuacaoFaseAtual = 0;
+          this.faseAtual++;
+
+          if (this.faseAtual > Object.keys(this.palavrasPorFase).length) {
+            this.fimDeJogo(true);
+          } else {
+            this.carregarFase(this.faseAtual);
+            this.velocidadeBase = 0.6; // Resetar velocidade para o início da nova fase
           }
-        }, 300);
+        }
       }
     },
 
     /**
-     * Adiciona uma nova palavra à lista de palavras ativas
+     * Adiciona uma palavra nova na tela
      */
     adicionarPalavra() {
-      if (this.listaPalavras.length === 0) return
+      if (!this.listaPalavras.length) return;
 
-      const texto = this.listaPalavras[Math.floor(Math.random() * this.listaPalavras.length)]
-      this.palavrasAtivas.push({
-        texto,
+      // Seleciona palavra aleatoria da lista
+      const indice = Math.floor(Math.random() * this.listaPalavras.length)
+      const palavraTexto = this.listaPalavras[indice]
+
+      // Remove a palavra da lista para evitar repetição
+      this.listaPalavras.splice(indice, 1)
+
+      // Cria objeto palavra com posição e velocidade
+      const palavra = {
+        texto: palavraTexto,
+        x: Math.random() * (this.areaJogo.width - 100), // Ajusta para evitar overflow
         y: 0,
-        x: Math.random() * (this.areaJogo.width - 100),
-        // Diminua os valores de velocidade para ficar mais lento:
-        velocidade: 0.2 + Math.random() * (0.2 + this.velocidadeBase * 0.1)
-      })
+        velocidade: 1 + Math.random() * 0.5, // Velocidade base antes multiplicada por velocidadeBase no animarPalavras
+        cor: '#ffffff'
+      }
+
+      this.palavrasAtivas.push(palavra)
     },
 
     /**
-     * Avança para a proxima fase do jogo
-     */
-    avancarFase() {
-      clearInterval(this.intervaloPalavras)
-      cancelAnimationFrame(this.intervaloAnimacao)
-
-      this.pontuacaoPorFase.push(this.pontuacaoFaseAtual);
-      this.pontuacaoFaseAtual = 0; // <-- ZERA AQUI
-
-      this.faseAtual++
-
-      if (this.palavrasPorFase['fase' + this.faseAtual]) {
-        setTimeout(() => {
-          this.mostrarPopupTemporario(`Fase ${this.faseAtual - 1} completada! Iniciando fase ${this.faseAtual}...`);
-          this.velocidadeBase = 1 + (this.faseAtual * 0.3)
-          this.palavrasAtivas = []
-          this.carregarFase(this.faseAtual)
-          this.iniciarAnimacaoPalavras()
-        }, 500)
-      } else {
-        // Só finaliza o jogo quando todas as palavras ativas sumirem
-        const checarFim = () => {
-          if (this.palavrasAtivas.length === 0) {
-            this.fimDeJogo(true)
-          } else {
-            setTimeout(checarFim, 300)
-          }
-        }
-        checarFim()
-      }
-    },
-
-    /**
-     * Finaliza o jogo
-     * @param {boolean} vitoria - Indica se o jogador venceu
-     */
-    fimDeJogo(vitoria) {
-      this.limparIntervalos();
-      this.pararMusica();
-
-      // se ganhar, som de vitoria, se perder, som de game over
-      if (vitoria && this.sounds.victory) {
-        this.tocarSom(this.sounds.victory);
-      } else if (!vitoria && this.sounds.gameOver) {
-        this.tocarSom(this.sounds.gameOver);
-      }
-
-      this.jogoIniciado = false;
-
-      // Salva o resultado final
-      this.resultadoFinal = {
-        pontos: this.pontuacao,
-        fase: this.faseAtual,
-        venceu: vitoria
-      };
-      //salva a pontuacao final para exibir ao usuario
-      if (this.pontuacaoFaseAtual > 0) {
-        this.pontuacaoPorFase.push(this.pontuacaoFaseAtual);
-      }
-      this.mostrarTelaGameOver = true;
-    },
-
-    /**
-     * Limpa os intervalos de animação
+     * Limpa os intervalos e animações para evitar vazamento de memória
      */
     limparIntervalos() {
       if (this.intervaloPalavras) clearInterval(this.intervaloPalavras)
       if (this.intervaloAnimacao) cancelAnimationFrame(this.intervaloAnimacao)
     },
 
-    iniciarMusica(musica) {
-      // Para a musica atual se tiver
-      this.pararMusica();
+    /**
+     * Finaliza o jogo mostrando tela de vitória ou derrota
+     * @param {boolean} venceu - true se o jogador venceu
+     */
+    fimDeJogo(venceu) {
+      this.jogoIniciado = false
+      this.limparIntervalos()
 
-      try {
-        this.audioElement = new Audio(musica);
-        this.audioElement.loop = true;
+      this.resultadoFinal.pontos = this.pontuacao
+      this.resultadoFinal.fase = this.faseAtual
+      this.resultadoFinal.venceu = venceu
 
-        this.audioElement.addEventListener('error', () => {
-          console.error("Erro ao carregar áudio");
-          this.audioElement = null;
-        })
+      this.mostrarTelaGameOver = true
+      this.pararMusica()
 
-        // Aqui inicia a reprodução
-        const playPromise = this.audioElement.play();
+      // Toca som de vitória ou derrota
+      const audio = new Audio(venceu ? this.sounds.victory : this.sounds.gameOver)
+      audio.play()
+    },
 
-        if (playPromise !== undefined) {
-          playPromise.catch(error => {
-            console.log("Reprodução automática prevenida:", error);
-            // Mostra um botão para permitir que o usuário inicie a música
-            this.mostrarBotaoAudio = true;
-          });
-        }
-
-      } catch (error) {
-        console.error("Erro ao iniciar musica: ", error);
-      }
+    iniciarMusica(src) {
+      this.pararMusica()
+      this.audioElement = new Audio(src)
+      this.audioElement.loop = true
+      this.audioElement.play()
+      this.mostrarBotaoAudio = true
     },
 
     pararMusica() {
       if (this.audioElement) {
-        this.audioElement.pause();
-        this.audioElement.currentTime = 0;
-        this.audioElement = null;
+        this.audioElement.pause()
+        this.audioElement = null
       }
+      this.mostrarBotaoAudio = false
     },
 
-    tocarSom(som) {
-      try {
-        const audio = new Audio(som);
-        audio.play().catch(e => console.log("Erro ao reproduzir som: ", e));
-      } catch (error) {
-        console.error("Erro ao carregar audio: ", error);
-      }
+    pausarOuRetomarMusica() {
+      if (!this.audioElement) return
+      if (this.audioElement.paused) this.audioElement.play()
+      else this.audioElement.pause()
     },
 
-    ativarAudio() {
-      if (this.vilaoAtual && this.vilaoAtual.musica) {
-        this.iniciarMusica(this.vilaoAtual.musica);
-      }
-      this.mostrarBotaoAudio = false;
+    mostrarAjuda() {
+      this.mostrarComoJogar = true
     },
 
-    mostrarPopupTemporario(mensagem) {
-      this.mensagemPopup = mensagem;
-      this.mostrarPopup = true;
-
-      setTimeout(() => {
-        this.mostrarPopup = false;
-        this.mensagemPopup = '';
-      }, 3000);
-    },
-
-    limparInput() { //função para limpar o input quando aperta enter
-      this.palavraDigitada = '';
-    },
-
-    getRandomColor() {
-      const colors = ['#00ffcc', '#ff00ff', '#6e00ff', '#ff3860', '#2afc98'];
-      return colors[Math.floor(Math.random() * colors.length)];
-    },
-
-    jogarNovamente() {
-      this.mostrarTelaGameOver = false;
-      this.jogoIniciado = false;
-      this.pontuacao = 0;
-      this.pontuacaoFaseAtual = 0;
-      this.pontuacaoPorFase = [];
-      this.vidas = 3;
-      this.faseAtual = 1;
-      this.palavraDigitada = '';
-      this.palavrasAtivas = [];
-      this.vilaoAtual = null;
-      this.personagemSelecionado = null;
-    },
-    voltarTelaInicial() {
-      this.mostrarTelaGameOver = false;
-      this.jogoIniciado = false;
-      this.pontuacao = 0;
-      this.vidas = 3;
-      this.faseAtual = 1;
-      this.palavraDigitada = '';
-      this.palavrasAtivas = [];
-      this.vilaoAtual = null;
-      this.personagemSelecionado = null;
-      this.$emit('voltar'); // Emite evento para o componente pai, se necessário
-    },
-
+    fecharAjuda() {
+      this.mostrarComoJogar = false
+    }
   }
 }
 </script>
+
+
 
 <!-- CSS -->
 <style scoped>
