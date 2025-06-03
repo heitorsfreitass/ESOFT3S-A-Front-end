@@ -20,13 +20,7 @@
 
     <!-- Tela de seleção de personagem -->
     <div v-if="!jogoIniciado" class="selection-screen">
-      <div class="how-to-play-container">
-        <button class="game-button how-to-play-button" @click="mostrarComoJogar = true" aria-label="Como Jogar">
-          <span>?</span>
-        </button>
-      </div>
       <h1 class="game-title">ESCOLHA SEU PERSONAGEM</h1>
-
       <div class="characters-grid">
         <div v-for="(p, index) in personagens" :key="index" class="character-card"
           :class="{ selected: personagemSelecionado === index }" @click="selecionarPersonagem(index)">
@@ -453,7 +447,7 @@ export default {
       // Cria objeto palavra com posição e velocidade
       const palavra = {
         texto: palavraTexto,
-        x: Math.random() * (this.areaJogo.width - 100), // Ajusta para evitar overflow
+        x: Math.random() * (this.areaJogo.width - (palavraTexto.length * 22 + 20)), // Ajusta para evitar overflow
         y: 0,
         velocidade: 1 + Math.random() * 0.5, // Velocidade base antes multiplicada por velocidadeBase no animarPalavras
         cor: '#ffffff'
