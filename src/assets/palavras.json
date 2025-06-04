@@ -80,5 +80,28 @@
     "ordenacao",
     "dinamica",
     "estrutura"
+  ],
+  "fase4": [
+    "bootstrap",
+    "framework",
+    "responsividade",
+    "container",
+    "grid",
+    "coluna",
+    "row",
+    "navbar",
+    "card",
+    "modal",
+    "dropdown",
+    "formulario",
+    "input",
+    "botao",
+    "customizacao",
+    "tema",
+    "classe",
+    "layout",
+    "breakpoint",
+    "mobile-first",
+    "utilitario"
   ]
 }

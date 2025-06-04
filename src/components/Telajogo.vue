@@ -8,12 +8,7 @@
     </div>
 
     <div v-if="mostrarBotaoAudio" class="audio-permission">
-      <button
-        v-if="audioElement"
-        class="game-button"
-        @click="pausarOuRetomarMusica"
-        style="margin-left: 1rem;"
-      >
+      <button v-if="audioElement" class="game-button" @click="pausarOuRetomarMusica" style="margin-left: 1rem;">
         {{ audioElement.paused ? 'Ligar Música' : 'Desligar Música' }}
       </button>
     </div>
@@ -147,6 +142,14 @@
     </transition>
   </div>
 
+  <transition name="popup">
+    <div v-if="mostrarTransicaoFase" class="popup-overlay">
+      <div class="popup-content">
+        <div class="popup-message">{{ mensagemTransicaoFase }}</div>
+      </div>
+    </div>
+  </transition>
+
   <!--Popup de GameOver (melhorado)-->
   <transition name="popup">
     <div v-if="mostrarTelaGameOver" class="popup-overlay">
@@ -202,6 +205,7 @@ const CORES_FEEDBACK = {
 }
 
 export default {
+  emits: ['voltar'],
   data() {
     return {
       personagemSelecionado: null,  // indice do personagem selecionado
@@ -223,7 +227,8 @@ export default {
         width: 800,
         height: 500
       },
-
+      mostrarTransicaoFase: false,
+      mensagemTransicaoFase: '',
       // Lista dos personagens disponiveis
       personagens: [
         { name: 'Perin', type: 'dev', image: perinImg },
@@ -277,6 +282,13 @@ export default {
     selecionarPersonagem(index) {
       this.personagemSelecionado = index
     },
+    mostrarPopupTemporario(msg) {
+      this.mensagemPopup = msg;
+      this.mostrarPopup = true;
+      setTimeout(() => {
+        this.mostrarPopup = false;
+      }, 2000); // 2 segundos
+    },
 
     /**
      * Inicia o jogo, resetando todos os estados
@@ -290,10 +302,10 @@ export default {
       this.pontuacao = 0
       this.vidas = 3
       this.faseAtual = 1
-      
+
       // >>> ALTERAÇÃO AQUI: também resetamos para a velocidade base mais lenta
       this.velocidadeBase = 0.6
-      
+
       this.palavraDigitada = ''
       this.palavrasAtivas = []
       this.pontuacaoPorFase = []
@@ -303,7 +315,7 @@ export default {
         this.atualizarDimensoesAreaJogo()
         this.carregarFase(this.faseAtual)
         this.iniciarAnimacaoPalavras()
-        if(this.$refs.inputPalavra) this.$refs.inputPalavra.focus()
+        if (this.$refs.inputPalavra) this.$refs.inputPalavra.focus()
       })
     },
 
@@ -416,17 +428,31 @@ export default {
         }
 
         // Verifica se acabou a fase (ex: pontos >= 100 ou acabou lista)
-        if (this.pontuacaoFaseAtual >= 100 || this.palavrasAtivas.length === 0) {
+        if (this.pontuacaoFaseAtual >= 100) {
           this.pontuacaoPorFase.push(this.pontuacaoFaseAtual);
           this.pontuacaoFaseAtual = 0;
-          this.faseAtual++;
 
-          if (this.faseAtual > Object.keys(this.palavrasPorFase).length) {
-            this.fimDeJogo(true);
-          } else {
+          // Transição de fase para qualquer fase, inclusive a última
+          this.limparIntervalos();
+          this.palavrasAtivas = [];
+          this.mensagemTransicaoFase = `Fase ${this.faseAtual} completa!`;
+          this.mostrarTransicaoFase = true;
+
+          setTimeout(() => {
+            this.mostrarTransicaoFase = false;
+            this.faseAtual++;
+
             this.carregarFase(this.faseAtual);
-            this.velocidadeBase = 0.6; // Resetar velocidade para o início da nova fase
-          }
+
+            this.$nextTick(() => {
+              if (!this.listaPalavras.length) {
+                this.fimDeJogo(true);
+              } else {
+                this.velocidadeBase = 0.6;
+                this.iniciarAnimacaoPalavras();
+              }
+            });
+          }, 2000);
         }
       }
     },
@@ -435,25 +461,33 @@ export default {
      * Adiciona uma palavra nova na tela
      */
     adicionarPalavra() {
-      if (!this.listaPalavras.length) return;
+      // Se a lista de palavras acabou, reabastece com as palavras da fase atual
+      if (!this.listaPalavras.length) {
+        const palavrasOriginais = this.palavrasPorFase['fase' + this.faseAtual];
+        if (palavrasOriginais && palavrasOriginais.length) {
+          this.listaPalavras = [...palavrasOriginais];
+        } else {
+          return; // Não há palavras para esta fase
+        }
+      }
 
-      // Seleciona palavra aleatoria da lista
-      const indice = Math.floor(Math.random() * this.listaPalavras.length)
-      const palavraTexto = this.listaPalavras[indice]
+      // Seleciona palavra aleatória da lista
+      const indice = Math.floor(Math.random() * this.listaPalavras.length);
+      const palavraTexto = this.listaPalavras[indice];
 
-      // Remove a palavra da lista para evitar repetição
-      this.listaPalavras.splice(indice, 1)
+      // Remove a palavra da lista para evitar repetição imediata
+      this.listaPalavras.splice(indice, 1);
 
       // Cria objeto palavra com posição e velocidade
       const palavra = {
         texto: palavraTexto,
-        x: Math.random() * (this.areaJogo.width - (palavraTexto.length * 22 + 20)), // Ajusta para evitar overflow
+        x: Math.random() * (this.areaJogo.width - (palavraTexto.length * 22 + 20)),
         y: 0,
-        velocidade: 1 + Math.random() * 0.5, // Velocidade base antes multiplicada por velocidadeBase no animarPalavras
+        velocidade: 1 + Math.random() * 0.5,
         cor: '#ffffff'
-      }
+      };
 
-      this.palavrasAtivas.push(palavra)
+      this.palavrasAtivas.push(palavra);
     },
 
     /**
