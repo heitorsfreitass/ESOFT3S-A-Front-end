@@ -291,6 +291,15 @@ export default {
     },
 
     /**
+     * Calcula a velocidade base das palavras
+     */
+    calcularVelocidadeBase() {
+      // Exemplo: velocidade cresce com a fase e com os acertos totais
+      // Ajuste os multiplicadores conforme desejar
+      return 0.6 + (this.faseAtual - 1) * 0.25 + Math.floor(this.pontuacao / 25) * 0.08;
+    },
+
+    /**
      * Inicia o jogo, resetando todos os estados
      */
     iniciarJogo() {
@@ -303,8 +312,7 @@ export default {
       this.vidas = 3
       this.faseAtual = 1
 
-      // >>> ALTERAÇÃO AQUI: também resetamos para a velocidade base mais lenta
-      this.velocidadeBase = 0.6
+      this.velocidadeBase = this.calcularVelocidadeBase();
 
       this.palavraDigitada = ''
       this.palavrasAtivas = []
@@ -340,6 +348,9 @@ export default {
     carregarFase(fase) {
       // Acha o vilão/professor da fase atual
       this.vilaoAtual = this.viloes.find(v => v.fase === fase) || null;
+
+      // Atualiza velocidade ao mudar de fase
+      this.velocidadeBase = this.calcularVelocidadeBase();
 
       // Da play na musica da fase
       if (this.vilaoAtual && this.vilaoAtual.musica) {
@@ -421,15 +432,15 @@ export default {
         this.pontuacaoFaseAtual += palavraCorrespondente.texto.length;
         this.palavraDigitada = ''; // Reseta o input depois de acertar
 
-        // diminui o incremento para tornar a velocidade crescente mais suave
-        if (this.pontuacao % 25 === 0) {
-          this.velocidadeBase += 0.1; // antes era 0.2
-          clearInterval(this.intervaloPalavras);
-          const novoIntervalo = Math.max(700, 2000 - this.velocidadeBase * 400);
-          this.intervaloPalavras = setInterval(() => {
-            this.adicionarPalavra()
-          }, novoIntervalo);
-        }
+        // Atualiza velocidade sempre que acertar
+        this.velocidadeBase = this.calcularVelocidadeBase();
+
+        // Atualiza intervalo de palavras
+        clearInterval(this.intervaloPalavras);
+        const novoIntervalo = Math.max(700, 2000 - this.velocidadeBase * 400);
+        this.intervaloPalavras = setInterval(() => {
+          this.adicionarPalavra()
+        }, novoIntervalo);
 
         // Verifica se acabou a fase (ex: pontos >= 100 ou acabou lista)
         if (this.pontuacaoFaseAtual >= 100) {
