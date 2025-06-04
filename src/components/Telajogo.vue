@@ -318,6 +318,10 @@ export default {
         if (this.$refs.inputPalavra) this.$refs.inputPalavra.focus()
       })
     },
+    //limpa input ao apertar enter
+    limparInput() {
+    this.palavraDigitada = '';
+  },
 
     /**
      * Atualiza as dimensoes da area de jogo
