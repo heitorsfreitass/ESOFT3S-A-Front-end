@@ -131,6 +131,24 @@
       </div>
     </transition>
 
+    <!-- Popup de introdução de fase -->
+    <transition name="popup">
+      <div v-if="mostrarIntroFase" class="popup-overlay">
+        <div class="popup-content intro-fase">
+          <div class="villain-intro-container">
+            <img :src="vilaoAtual.image" class="villain-intro-image">
+            <div class="villain-intro-name">{{ vilaoAtual.name }}</div>
+          </div>
+          <div class="popup-message">FASE {{ faseAtual }}</div>
+          
+          <!-- Barra de progresso automática -->
+          <div class="progress-bar-container">
+            <div class="progress-bar" :style="{ width: progressoIntro + '%' }"></div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <!-- Popup de mensagem -->
     <transition name="popup">
       <div v-if="mostrarPopup" class="popup-overlay" @click="mostrarPopup = false">
@@ -259,6 +277,10 @@ export default {
         fase: 1,
         venceu: false
       },
+      mostrarIntroFase: false,  // Controla se mostra a introdução da fase
+      progressoIntro: 0,
+      intervaloIntro: null,
+      duracaoIntro: 3000,
     }
   },
 
@@ -271,6 +293,7 @@ export default {
   },
 
   beforeDestroy() {
+    if (this.intervaloIntro) clearInterval(this.intervaloIntro);
     this.limparIntervalos()
     window.removeEventListener('resize', this.atualizarDimensoesAreaJogo)
     window.removeEventListener('keydown', this.atalhoPularFase)
@@ -327,6 +350,17 @@ export default {
       return 0.6 + (this.faseAtual - 1) * 0.25 + Math.floor(this.pontuacao / 25) * 0.08;
     },
 
+    iniciarNovaFase() {
+      this.mostrarIntroFase = false;
+      this.velocidadeBase = this.calcularVelocidadeBase();
+      this.iniciarAnimacaoPalavras();
+      this.$nextTick(() => {
+        if (this.$refs.inputPalavra) {
+          this.$refs.inputPalavra.focus();
+        }
+      });
+    },
+
     /**
      * Inicia o jogo, resetando todos os estados
      */
@@ -369,24 +403,43 @@ export default {
       }
     },
 
+    iniciarIntroAutomatica() {
+      this.progressoIntro = 0;
+      const incremento = 100 / (this.duracaoIntro / 50); // Calcula incremento para 50ms
+      
+      this.intervaloIntro = setInterval(() => {
+        this.progressoIntro += incremento;
+        
+        if (this.progressoIntro >= 100) {
+          this.finalizarIntro();
+        }
+      }, 50);
+    },
+    
+    finalizarIntro() {
+      clearInterval(this.intervaloIntro);
+      this.mostrarIntroFase = false;
+      this.iniciarAnimacaoPalavras();
+    },
+
     /**
      * Carrega as palavras para a fase especificada
      * @param {number} fase - Numero da fase a ser carregada
      */
     carregarFase(fase) {
-      // Acha o vilão/professor da fase atual
       this.vilaoAtual = this.viloes.find(v => v.fase === fase) || null;
-
-      // Atualiza velocidade ao mudar de fase
       this.velocidadeBase = this.calcularVelocidadeBase();
-
-      // Da play na musica da fase
-      if (this.vilaoAtual && this.vilaoAtual.musica) {
+      this.listaPalavras = [...(this.palavrasPorFase['fase' + fase] || [])];
+      
+      // Mostra a intro e inicia a barra de progresso
+      this.mostrarIntroFase = true;
+      this.$nextTick(() => {
+        this.iniciarIntroAutomatica();
+      });
+      
+      if (this.vilaoAtual?.musica) {
         this.iniciarMusica(this.vilaoAtual.musica);
       }
-
-      const palavras = this.palavrasPorFase['fase' + fase]
-      this.listaPalavras = palavras ? [...palavras] : []
     },
 
     /**
@@ -537,6 +590,7 @@ export default {
      * Limpa os intervalos e animações para evitar vazamento de memória
      */
     limparIntervalos() {
+      if (this.intervaloIntro) clearInterval(this.intervaloIntro);
       if (this.intervaloPalavras) clearInterval(this.intervaloPalavras)
       if (this.intervaloAnimacao) cancelAnimationFrame(this.intervaloAnimacao)
     },
@@ -1245,5 +1299,64 @@ export default {
     transform: translate(-50%, -50%) scale(2.2);
     opacity: 0;
   }
+}
+
+/* Estilos específicos para a intro de fase */
+.intro-fase {
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.villain-intro-container {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.villain-intro-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--danger);
+  margin: 0 auto 1rem;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+}
+
+.villain-intro-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--danger);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.popup-overlay {
+  z-index: 1000; /* Garante que fique acima de tudo */
+}
+.progress-bar-container {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  margin-top: 1.5rem;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(to right, var(--accent), var(--secondary));
+  border-radius: 5px;
+  transition: width 0.05s linear;
+}
+
+.intro-fase {
+  max-width: 400px;
+  padding: 2rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
