@@ -266,12 +266,14 @@ export default {
   mounted() {
     this.atualizarDimensoesAreaJogo()
     window.addEventListener('resize', this.atualizarDimensoesAreaJogo)
+    // Atalho para pular de fase: Ctrl + P
+    window.addEventListener('keydown', this.atalhoPularFase)
   },
 
-  // Hook chamado antes do componente ser destruído
   beforeDestroy() {
     this.limparIntervalos()
     window.removeEventListener('resize', this.atualizarDimensoesAreaJogo)
+    window.removeEventListener('keydown', this.atalhoPularFase)
   },
 
   methods: {
@@ -288,6 +290,32 @@ export default {
       setTimeout(() => {
         this.mostrarPopup = false;
       }, 2000); // 2 segundos
+    },
+    
+    atalhoPularFase(e) {
+      if (this.jogoIniciado && e.ctrlKey && (e.key === 'm' || e.key === 'M')) {
+        // Simula fim da fase atual
+        this.pontuacaoPorFase.push(this.pontuacaoFaseAtual);
+        this.pontuacaoFaseAtual = 0;
+        this.limparIntervalos();
+        this.palavrasAtivas = [];
+        this.mensagemTransicaoFase = `Fase ${this.faseAtual} completa!`;
+        this.mostrarTransicaoFase = true;
+
+        setTimeout(() => {
+          this.mostrarTransicaoFase = false;
+          this.faseAtual++;
+          this.carregarFase(this.faseAtual);
+          this.$nextTick(() => {
+            if (!this.listaPalavras.length) {
+              this.fimDeJogo(true);
+            } else {
+              this.velocidadeBase = 0.6;
+              this.iniciarAnimacaoPalavras();
+            }
+          });
+        }, 2000);
+      }
     },
 
     /**
@@ -328,8 +356,8 @@ export default {
     },
     //limpa input ao apertar enter
     limparInput() {
-    this.palavraDigitada = '';
-  },
+      this.palavraDigitada = '';
+    },
 
     /**
      * Atualiza as dimensoes da area de jogo
