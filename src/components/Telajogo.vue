@@ -103,8 +103,17 @@
       <!-- Controles -->
       <div class="game-controls">
         <div class="input-container">
-          <input type="text" v-model="palavraDigitada" @input="verificarPalavra" @keydown.enter="limparInput"
-            placeholder="Digite a palavra aqui..." class="game-input" ref="inputPalavra" autofocus />
+          <input
+            type="text"
+            v-model="palavraDigitada"
+            @input="verificarPalavra"
+            @keydown.enter="limparInput"
+            placeholder="Digite a palavra aqui..."
+            class="game-input"
+            ref="inputPalavra"
+            autofocus
+            :disabled="pausado"
+          />
           <div class="input-border"></div>
         </div>
       </div>
@@ -172,7 +181,6 @@
       </div>
     </div>
   </transition>
-
 </template>
 
 <script>
@@ -185,9 +193,12 @@ import ferliniImg from '@/assets/characters/villains/ferlini.jpeg'
 import hugoImg from '@/assets/characters/villains/hugo.jpeg'
 
 // Personagens
-import perinImg from '@/assets/characters/perin.jpg'
-import marcosImg from '@/assets/characters/marcos.jpg'
+import andreImg from '@/assets/characters/andre.jpg'
 import andrezImg from '@/assets/characters/andrez.jpg'
+import bernardoImg from '@/assets/characters/bernardo.jpg'
+import gabrielImg from '@/assets/characters/gabriel.jpg'
+import heitorImg from '@/assets/characters/heitor.jpg'
+import marcosImg from '@/assets/characters/marcos.jpg'
 
 // Sons
 import fase1Msc from '@/assets/sounds/primeira-fase.mp3'
@@ -223,6 +234,7 @@ export default {
       listaPalavras: [],            // Lista de palavras da fase atual
       intervaloPalavras: null,      // Referencia do intervalo de geração de palavras
       intervaloAnimacao: null,      // referencia da animaçao frame a frame
+      pausado: false,
       areaJogo: {                   // Dimensoes da área de jogo
         width: 800,
         height: 500
@@ -231,12 +243,12 @@ export default {
       mensagemTransicaoFase: '',
       // Lista dos personagens disponiveis
       personagens: [
-        { name: 'Perin', type: 'dev', image: perinImg },
+        { name: 'Perin', type: 'dev', image: andreImg },
         { name: 'Marcos', type: 'dev', image: marcosImg },
         { name: 'Andrezão', type: 'dev', image: andrezImg },
-        { name: 'Gabe', type: 'dev' },
-        { name: 'Dig', type: 'dev' },
-        { name: 'Bernardo', type: 'dev' }
+        { name: 'Gabe', type: 'dev' , image: gabrielImg },
+        { name: 'Dig', type: 'dev', image: heitorImg },
+        { name: 'Bernardo', type: 'dev', image: bernardoImg },
       ],
       viloes: [
         { name: 'Cidão, O Abominável (mas nem tanto)', image: cidaoImg, fase: 1, musica: fase1Msc },
@@ -245,6 +257,7 @@ export default {
         { name: 'Hugo, O Sr. Bootstrap...', image: hugoImg, fase: 4, musica: fase2Msc },
       ],
       audioElement: null,
+      audioAtivo: true,
       vilaoAtual: null,
       mostrarBotaoAudio: false,
       sounds: {
@@ -521,12 +534,17 @@ export default {
       // Remove a palavra da lista para evitar repetição imediata
       this.listaPalavras.splice(indice, 1);
 
-      // Cria objeto palavra com posição e velocidade
+
+      let velocidade = 1 + Math.random() * 0.5;
+      if (palavraTexto.length > 5) {
+        velocidade *= 0.6; 
+      }
+
       const palavra = {
         texto: palavraTexto,
         x: Math.random() * (this.areaJogo.width - (palavraTexto.length * 22 + 20)),
         y: 0,
-        velocidade: 1 + Math.random() * 0.5,
+        velocidade: velocidade,
         cor: '#ffffff'
       };
 
@@ -565,8 +583,10 @@ export default {
       this.pararMusica()
       this.audioElement = new Audio(src)
       this.audioElement.loop = true
-      this.audioElement.play()
       this.mostrarBotaoAudio = true
+      if (this.audioAtivo) {
+        this.audioElement.play()
+      }
     },
 
     pararMusica() {
@@ -579,8 +599,13 @@ export default {
 
     pausarOuRetomarMusica() {
       if (!this.audioElement) return
-      if (this.audioElement.paused) this.audioElement.play()
-      else this.audioElement.pause()
+      if (this.audioElement.paused) {
+        this.audioElement.play()
+        this.audioAtivo = true
+      } else {
+        this.audioElement.pause()
+        this.audioAtivo = false
+      }
     },
 
     mostrarAjuda() {
@@ -1195,6 +1220,10 @@ export default {
   top: 24px;
   right: 32px;
   z-index: 10;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px; /* Espaço entre os botões */
   border-radius: 500px;
   padding: 0.7em 0.5em;
 }
