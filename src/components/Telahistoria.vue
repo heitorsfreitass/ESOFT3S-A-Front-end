@@ -136,6 +136,15 @@ export default {
 };
 </script>
 
+<style>
+html, body {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+</style>
+
 <style scoped>
 
 /* Estrutura principal */
@@ -143,6 +152,7 @@ export default {
   background: var(--darker);
   color: var(--light);
   min-height: 100vh;
+  overflow-y: visible;
   padding: 2rem;
   position: relative;
 }

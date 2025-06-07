@@ -46,6 +46,14 @@
       <button class="game-button how-to-play-button" @click="mostrarComoJogar = true" aria-label="Como Jogar">
         <span>?</span>
       </button>
+      <button
+        v-if="jogoIniciado && !mostrarTelaGameOver"
+        class="game-button"
+        @click="alternarPausa"
+        style="margin-left: 8px;"
+      >
+        PAUSA
+      </button>
     </div>
 
     <!-- Tela do jogo ativo -->
@@ -634,6 +642,17 @@ export default {
       this.limparIntervalos();
       this.pararMusica();
       this.$emit('voltar');
+    },
+    alternarPausa() {
+      this.pausado = !this.pausado;
+      if (this.pausado) {
+        if (this.intervaloPalavras) clearInterval(this.intervaloPalavras);
+        if (this.intervaloAnimacao) cancelAnimationFrame(this.intervaloAnimacao);
+        if (this.audioElement && !this.audioElement.paused) this.audioElement.pause();
+      } else {
+        if (this.audioElement && this.audioAtivo) this.audioElement.play();
+        this.iniciarAnimacaoPalavras();
+      }
     },
   }
 }
