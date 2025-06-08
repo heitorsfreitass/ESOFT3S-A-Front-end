@@ -163,7 +163,7 @@
         <div style="color: #fff; text-align:left; margin-bottom: 1rem;">
           <ul>
             <li><strong>Pontos totais:</strong> {{ resultadoFinal.pontos }}</li>
-            <li><strong>Fase atingida:</strong> {{ resultadoFinal.fase }}</li>
+            <li><strong>Fase atingida:</strong> {{ resultadoFinal.fase - (resultadoFinal.venceu ? 1 : 0) }}</li>
             <li v-if="resultadoFinal.venceu">Você completou todas as fases!</li>
             <li v-else>Que tal tentar de novo para superar sua pontuação?</li>
           </ul>
@@ -355,11 +355,19 @@ export default {
      * Calcula a velocidade base das palavras
      */
     calcularVelocidadeBase() {
-      // Exemplo: velocidade cresce com a fase e com os acertos totais
-      // Ajuste os multiplicadores conforme desejar
-      return 0.6 + (this.faseAtual - 1) * 0.25 + Math.floor(this.pontuacao / 25) * 0.08;
+      switch (this.faseAtual) {
+        case 1: // muito muito fácil
+          return 0.7;
+        case 2: // muito fácil
+          return 0.95;
+        case 3: // médio
+          return 1.15;
+        case 4: // médio +
+          return 1.3;
+        default:
+          return 1.5; // fases extras/bonus futuras
+      }
     },
-
     /**
      * Inicia o jogo, resetando todos os estados
      */
@@ -474,41 +482,36 @@ export default {
      * Verifica se a palavra digitada está na lista de palavras ativas
      */
     verificarPalavra() {
-      const palavraLower = this.palavraDigitada.toLowerCase();
+      // Remove espaços e deixa minúsculo
+      const palavraLower = this.palavraDigitada.replace(/\s/g, '').toLowerCase();
 
-      // Encontra a primeira palavra que começa com o texto digitado
+      // Encontra a primeira palavra que começa com o texto digitado (ignorando espaços)
       const palavraCorrespondente = this.palavrasAtivas.find(p =>
-        p.texto.toLowerCase().startsWith(palavraLower)
+        p.texto.replace(/\s/g, '').toLowerCase().startsWith(palavraLower)
       );
 
-      if (palavraCorrespondente && palavraCorrespondente.texto.toLowerCase() === palavraLower) {
-        // Completa (palavra totalmente digitada)
+      if (palavraCorrespondente && palavraCorrespondente.texto.replace(/\s/g, '').toLowerCase() === palavraLower) {
+        // ...restante do código igual...
         palavraCorrespondente.cor = CORES_FEEDBACK.acerto;
         setTimeout(() => {
           this.palavrasAtivas = this.palavrasAtivas.filter(p => p !== palavraCorrespondente);
         }, 200);
 
-        // Soma pontos por caractere da palavra acertada
         this.pontuacao += palavraCorrespondente.texto.length;
         this.pontuacaoFaseAtual += palavraCorrespondente.texto.length;
-        this.palavraDigitada = ''; // Reseta o input depois de acertar
+        this.palavraDigitada = '';
 
-        // Atualiza velocidade sempre que acertar
         this.velocidadeBase = this.calcularVelocidadeBase();
 
-        // Atualiza intervalo de palavras
         clearInterval(this.intervaloPalavras);
         const novoIntervalo = Math.max(700, 2000 - this.velocidadeBase * 400);
         this.intervaloPalavras = setInterval(() => {
           this.adicionarPalavra()
         }, novoIntervalo);
 
-        // Verifica se acabou a fase (ex: pontos >= 100 ou acabou lista)
         if (this.pontuacaoFaseAtual >= 100) {
           this.pontuacaoPorFase.push(this.pontuacaoFaseAtual);
           this.pontuacaoFaseAtual = 0;
-
-          // Transição de fase para qualquer fase, inclusive a última
           this.limparIntervalos();
           this.palavrasAtivas = [];
           this.mensagemTransicaoFase = `Fase ${this.faseAtual} completa!`;
@@ -554,11 +557,14 @@ export default {
       // Remove a palavra da lista para evitar repetição imediata
       this.listaPalavras.splice(indice, 1);
 
+      // Quanto menor a palavra, mais rápida; quanto maior, mais lenta
+      // Exemplo: velocidade = base - (tamanho * fator), mas nunca menor que um mínimo
+      const baseVelocidade = 2.2; // velocidade máxima para palavras pequenas
+      const fator = 0.2;         // quanto maior, mais diminui
+      let velocidade = Math.max(0.7, baseVelocidade - palavraTexto.length * fator);
 
-      let velocidade = 1 + Math.random() * 0.5;
-      if (palavraTexto.length > 5) {
-        velocidade *= 0.6;
-      }
+      // Pequena variação aleatória para não ficar tudo igual
+      velocidade *= 0.95 + Math.random() * 0.1;
 
       const palavra = {
         texto: palavraTexto,
@@ -570,7 +576,6 @@ export default {
 
       this.palavrasAtivas.push(palavra);
     },
-
     /**
      * Limpa os intervalos e animações para evitar vazamento de memória
      */
