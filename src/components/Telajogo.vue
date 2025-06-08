@@ -73,7 +73,7 @@
           </div>
           <div class="stat">
             <div class="stat-label">FASE</div>
-            <div class="stat-value">{{ faseAtual }}</div>
+            <div class="stat-value">{{ faseAtual === 5 ? 'BÔNUS' : faseAtual }}</div>
           </div>
         </div>
 
@@ -179,7 +179,8 @@
             </ul>
           </div>
           <div style="display: flex; gap: 1rem; justify-content: center;">
-            <button class="game-button" @click="jogarNovamente">Jogar Novamente</button>
+            <button v-if="resultadoFinal.venceu" class="game-button" @click="iniciarFaseBonus">Fase Bônus</button>
+            <button v-else class="game-button" @click="jogarNovamente">Jogar Novamente</button>
             <button class="game-button" @click="voltarTelaInicial">Tela Inicial</button>
           </div>
         </div>
@@ -330,7 +331,6 @@ export default {
 
     atalhoPularFase(e) {
       if (this.jogoIniciado && e.ctrlKey && (e.key === 'm' || e.key === 'M')) {
-        // Simula fim da fase atual
         this.pontuacaoPorFase.push(this.pontuacaoFaseAtual);
         this.pontuacaoFaseAtual = 0;
         this.limparIntervalos();
@@ -340,17 +340,18 @@ export default {
 
         setTimeout(() => {
           this.mostrarTransicaoFase = false;
-          this.faseAtual++;
-          this.carregarFase(this.faseAtual);
-          this.$nextTick(() => {
-            if (!this.listaPalavras.length) {
-              this.fimDeJogo(true);
-            } else {
+          if (this.faseAtual < 4) {
+            this.faseAtual++;
+            this.carregarFase(this.faseAtual);
+            this.$nextTick(() => {
               this.velocidadeBase = 0.6;
               this.iniciarAnimacaoPalavras();
-            }
-          });
-        }, 2000);
+            });
+          } else {
+            // Terminou a fase 4, mostra tela de vitória
+            this.fimDeJogo(true);
+          }
+        }, 1200); // tempo menor para suavidade
       }
     },
 
@@ -366,26 +367,24 @@ export default {
       }
     },
 
-    /**
-     * Calcula a velocidade base das palavras
-     */
+
+    //Calcula a velocidade base das palavras
     calcularVelocidadeBase() {
+      if (this.faseAtual === 5) {
+        // Aumenta a velocidade base conforme a pontuação total na fase bônus
+        // Exemplo: começa em 1.5 e aumenta 0.1 a cada 50 pontos
+        return 1 + Math.floor(this.pontuacaoFaseAtual / 50) * 0.1;
+      }
       switch (this.faseAtual) {
-        case 1: // muito muito fácil
-          return 0.7;
-        case 2: // muito fácil
-          return 0.95;
-        case 3: // médio
-          return 1.15;
-        case 4: // médio +
-          return 1.3;
-        default:
-          return 1.5; // fases extras/bonus futuras
+        case 1: return 0.7;
+        case 2: return 0.95;
+        case 3: return 1.15;
+        case 4: return 1.2;
+        default: return 1.5;
       }
     },
-    /**
-     * Inicia o jogo, resetando todos os estados
-     */
+
+    //Inicia o jogo, resetando todos os estados
     iniciarJogo() {
       if (this.personagemSelecionado === null) return
 
@@ -429,25 +428,28 @@ export default {
      * Carrega as palavras para a fase especificada
      * @param {number} fase - Numero da fase a ser carregada
      */
+
     carregarFase(fase) {
-      // Acha o vilão/professor da fase atual
+      // Se for a fase bônus (ex: fase 5)
+      if (fase === 5) {
+        this.vilaoAtual = null; // ou defina um vilão especial se quiser
+        this.velocidadeBase = 1.5; // ou ajuste para o desafio da fase bônus
+        this.iniciarMusica(fase2Msc); // ou outra música especial
+        this.listaPalavras = this.palavrasPorFase['faseBonus'] ? [...this.palavrasPorFase['faseBonus']] : [];
+        return;
+      }
+      // Fases normais
       this.vilaoAtual = this.viloes.find(v => v.fase === fase) || null;
-
-      // Atualiza velocidade ao mudar de fase
       this.velocidadeBase = this.calcularVelocidadeBase();
-
-      // Da play na musica da fase
       if (this.vilaoAtual && this.vilaoAtual.musica) {
         this.iniciarMusica(this.vilaoAtual.musica);
       }
-
-      const palavras = this.palavrasPorFase['fase' + fase]
-      this.listaPalavras = palavras ? [...palavras] : []
+      const palavras = this.palavrasPorFase['fase' + fase];
+      this.listaPalavras = palavras ? [...palavras] : [];
     },
 
-    /**
-     * Inicia a animaçao das palavras caindo
-     */
+
+    //Inicia a animaçao das palavras caindo
     iniciarAnimacaoPalavras() {
       this.limparIntervalos()
 
@@ -498,9 +500,8 @@ export default {
       }
     },
 
-    /**
-     * Verifica se a palavra digitada está na lista de palavras ativas
-     */
+
+    //Verifica se a palavra digitada está na lista de palavras ativas
     verificarPalavra() {
       // Remove espaços e deixa minúsculo
       const palavraLower = this.palavraDigitada.replace(/\s/g, '').toLowerCase();
@@ -547,7 +548,7 @@ export default {
           this.adicionarPalavra()
         }, novoIntervalo);
 
-        if (this.pontuacaoFaseAtual >= 100) {
+        if (this.faseAtual !== 5 && this.pontuacaoFaseAtual >= 100) {
           this.pontuacaoPorFase.push(this.pontuacaoFaseAtual);
           this.pontuacaoFaseAtual = 0;
           this.limparIntervalos();
@@ -557,26 +558,25 @@ export default {
 
           setTimeout(() => {
             this.mostrarTransicaoFase = false;
-            this.faseAtual++;
-
-            this.carregarFase(this.faseAtual);
-
-            this.$nextTick(() => {
-              if (!this.listaPalavras.length) {
-                this.fimDeJogo(true);
-              } else {
+            if (this.faseAtual < 4) {
+              this.faseAtual++;
+              this.carregarFase(this.faseAtual);
+              this.$nextTick(() => {
                 this.velocidadeBase = 0.6;
                 this.iniciarAnimacaoPalavras();
-              }
-            });
+              });
+            } else {
+              // Terminou a fase 4, mostra tela de vitória
+              this.fimDeJogo(true);
+            }
           }, 2000);
+
         }
       }
     },
 
-    /**
-     * Adiciona uma palavra nova na tela
-     */
+
+    //Adiciona uma palavra nova na tela
     adicionarPalavra() {
       // Se a lista de palavras acabou, reabastece com as palavras da fase atual
       if (!this.listaPalavras.length) {
@@ -709,6 +709,19 @@ export default {
         this.iniciarAnimacaoPalavras();
       }
     },
+
+    iniciarFaseBonus() {
+      this.mostrarTelaGameOver = false;
+      this.jogoIniciado = true;
+      this.faseAtual = 5;
+      this.pontuacaoFaseAtual = 0;
+      this.palavraDigitada = '';
+      this.palavrasAtivas = [];
+      this.vidas = 3;
+      this.carregarFase(5);
+      this.iniciarAnimacaoPalavras();
+    }
+
   }
 }
 </script>
