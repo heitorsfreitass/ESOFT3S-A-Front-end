@@ -89,13 +89,24 @@
       <!-- Área do jogo -->
       <div class="game-area" ref="areaJogo">
         <div class="falling-words-container">
-          <div v-for="(palavra, index) in palavrasAtivas" :key="index" class="falling-word" :style="{
-            top: palavra.y + 'px',
-            left: palavra.x + 'px',
-            color: palavra.cor || getRandomColor(),
-            filter: `drop-shadow(0 0 5px ${palavra.cor || getRandomColor()})`
-          }">
-            {{ palavra.texto }}
+          <div class="falling-words-container">
+            <div v-for="(palavra, index) in palavrasAtivas" :key="index" class="falling-word" :style="{
+              top: palavra.y + 'px',
+              left: palavra.x + 'px',
+              color: palavra.cor || getRandomColor(),
+              filter: `drop-shadow(0 0 5px ${palavra.cor || getRandomColor()})`
+            }">
+              {{ palavra.texto }}
+            </div>
+            <!-- Fantasminhas de pontos -->
+            <transition-group name="fantasminha" tag="div">
+              <div v-for="fantasma in fantasminhas" :key="fantasma.id" class="fantasminha" :style="{
+                top: (fantasma.y - 20) + 'px',
+                left: (fantasma.x + 30) + 'px'
+              }">
+                <span style="color:#00ff00;">+{{ fantasma.pontos }}</span>
+              </div>
+            </transition-group>
           </div>
         </div>
       </div>
@@ -143,47 +154,48 @@
         </div>
       </div>
     </transition>
+
+    <transition name="popup">
+      <div v-if="mostrarTransicaoFase" class="popup-overlay">
+        <div class="popup-content">
+          <div class="popup-message">{{ mensagemTransicaoFase }}</div>
+        </div>
+      </div>
+    </transition>
+
+    <!--Popup de GameOver-->
+    <transition name="popup">
+      <div v-if="mostrarTelaGameOver" class="popup-overlay">
+        <div class="popup-content">
+          <div class="popup-message" style="margin-bottom: 1rem;">
+            <strong>{{ resultadoFinal.venceu ? 'Parabéns! Você venceu!' : 'Game Over!' }}</strong>
+          </div>
+          <div style="color: #fff; text-align:left; margin-bottom: 1rem;">
+            <ul>
+              <li><strong>Pontos totais:</strong> {{ resultadoFinal.pontos }}</li>
+              <li><strong>Fase atingida:</strong> {{ resultadoFinal.fase - (resultadoFinal.venceu ? 1 : 0) }}</li>
+              <li v-if="resultadoFinal.venceu">Você completou todas as fases!</li>
+              <li v-else>Que tal tentar de novo para superar sua pontuação?</li>
+            </ul>
+          </div>
+          <div style="display: flex; gap: 1rem; justify-content: center;">
+            <button class="game-button" @click="jogarNovamente">Jogar Novamente</button>
+            <button class="game-button" @click="voltarTelaInicial">Tela Inicial</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!--Popup Jogo Pausado-->
+    <transition name="popup">
+      <div v-if="pausado && jogoIniciado && !mostrarTelaGameOver" class="popup-overlay">
+        <div class="popup-content">
+          <div class="popup-message">Jogo Pausado<br><span style="font-size:1rem;">Pressione ESC para voltar</span>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
-
-  <transition name="popup">
-    <div v-if="mostrarTransicaoFase" class="popup-overlay">
-      <div class="popup-content">
-        <div class="popup-message">{{ mensagemTransicaoFase }}</div>
-      </div>
-    </div>
-  </transition>
-
-  <!--Popup de GameOver-->
-  <transition name="popup">
-    <div v-if="mostrarTelaGameOver" class="popup-overlay">
-      <div class="popup-content">
-        <div class="popup-message" style="margin-bottom: 1rem;">
-          <strong>{{ resultadoFinal.venceu ? 'Parabéns! Você venceu!' : 'Game Over!' }}</strong>
-        </div>
-        <div style="color: #fff; text-align:left; margin-bottom: 1rem;">
-          <ul>
-            <li><strong>Pontos totais:</strong> {{ resultadoFinal.pontos }}</li>
-            <li><strong>Fase atingida:</strong> {{ resultadoFinal.fase - (resultadoFinal.venceu ? 1 : 0) }}</li>
-            <li v-if="resultadoFinal.venceu">Você completou todas as fases!</li>
-            <li v-else>Que tal tentar de novo para superar sua pontuação?</li>
-          </ul>
-        </div>
-        <div style="display: flex; gap: 1rem; justify-content: center;">
-          <button class="game-button" @click="jogarNovamente">Jogar Novamente</button>
-          <button class="game-button" @click="voltarTelaInicial">Tela Inicial</button>
-        </div>
-      </div>
-    </div>
-  </transition>
-
-  <!--Popup Jogo Pausado-->
-  <transition name="popup">
-    <div v-if="pausado && jogoIniciado && !mostrarTelaGameOver" class="popup-overlay">
-      <div class="popup-content">
-        <div class="popup-message">Jogo Pausado<br><span style="font-size:1rem;">Pressione ESC para voltar</span></div>
-      </div>
-    </div>
-  </transition>
 
 </template>
 
@@ -207,6 +219,8 @@ import marcosImg from '@/assets/characters/marcos.jpg'
 // Sons
 import fase1Msc from '@/assets/sounds/primeira-fase.mp3'
 import fase2Msc from '@/assets/sounds/segunda-fase.mp3'
+import acertoSound from '@/assets/sounds/acerto.mp3'
+import erroSound from '@/assets/sounds/erro.mp3'
 
 import gameOver from '@/assets/sounds/gameover.mp3'
 import victory from '@/assets/sounds/victory.mp3'
@@ -276,6 +290,7 @@ export default {
         fase: 1,
         venceu: false
       },
+      fantasminhas: [],
     }
   },
 
@@ -463,6 +478,11 @@ export default {
           perdeuVida = true
           this.vidas--
 
+          // TOCA O SOM DE ERRO
+          const audio = new Audio(erroSound)
+          audio.volume = 0.5
+          audio.play()
+
           // Verifica se o jogador perdeu
           if (this.vidas <= 0) {
             this.fimDeJogo(false)
@@ -491,8 +511,26 @@ export default {
       );
 
       if (palavraCorrespondente && palavraCorrespondente.texto.replace(/\s/g, '').toLowerCase() === palavraLower) {
-        // ...restante do código igual...
         palavraCorrespondente.cor = CORES_FEEDBACK.acerto;
+        //TOCA O SOM DE ACERTO
+        const audio = new Audio(acertoSound);
+        audio.volume = 0.5; // ajuste o volume 
+        audio.play();
+        setTimeout(() => {
+          this.palavrasAtivas = this.palavrasAtivas.filter(p => p !== palavraCorrespondente);
+        }, 200);
+
+        const id = Date.now() + Math.random();
+        this.fantasminhas.push({
+          id,
+          pontos: palavraCorrespondente.texto.length,
+          x: palavraCorrespondente.x,
+          y: palavraCorrespondente.y,
+        });
+        setTimeout(() => {
+          this.fantasminhas = this.fantasminhas.filter(f => f.id !== id);
+        }, 500);
+
         setTimeout(() => {
           this.palavrasAtivas = this.palavrasAtivas.filter(p => p !== palavraCorrespondente);
         }, 200);
@@ -1311,5 +1349,28 @@ export default {
     transform: translate(-50%, -50%) scale(2.2);
     opacity: 0;
   }
+}
+
+.fantasminha {
+  position: absolute;
+  color: #00ff88;
+  font-size: 1.3rem;
+  font-weight: bold;
+  text-shadow: 0 0 8px #00ff88, 0 0 2px #fff;
+  pointer-events: none;
+  opacity: 1;
+  z-index: 10;
+  transition: transform 1s cubic-bezier(.4, 2, .6, 1), opacity 1s;
+}
+
+.fantasminha-enter-active,
+.fantasminha-leave-active {
+  transition: transform 1s, opacity 1s;
+}
+
+.fantasminha-enter,
+.fantasminha-leave-to {
+  opacity: 0;
+  transform: translateY(-40px) scale(1.2);
 }
 </style>
