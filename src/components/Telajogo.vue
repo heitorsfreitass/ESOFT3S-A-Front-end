@@ -46,14 +46,6 @@
       <button class="game-button how-to-play-button" @click="mostrarComoJogar = true" aria-label="Como Jogar">
         <span>?</span>
       </button>
-      <button
-        v-if="jogoIniciado && !mostrarTelaGameOver"
-        class="game-button"
-        @click="alternarPausa"
-        style="margin-left: 8px;"
-      >
-        PAUSA
-      </button>
     </div>
 
     <!-- Tela do jogo ativo -->
@@ -111,17 +103,9 @@
       <!-- Controles -->
       <div class="game-controls">
         <div class="input-container">
-          <input
-            type="text"
-            v-model="palavraDigitada"
-            @input="verificarPalavra"
-            @keydown.enter="limparInput"
-            placeholder="Digite a palavra aqui..."
-            class="game-input"
-            ref="inputPalavra"
-            autofocus
-            :disabled="pausado"
-          />
+          <input type="text" v-model="palavraDigitada" @input="verificarPalavra" @keydown.enter="limparInput"
+            placeholder="Digite a palavra aqui..." class="game-input" ref="inputPalavra" autofocus
+            :disabled="pausado" />
           <div class="input-border"></div>
         </div>
       </div>
@@ -141,6 +125,8 @@
               <li>Cada erro ou palavra perdida tira uma vida.</li>
               <li>Avance de fase ao atingir a pontuação necessária.</li>
               <li>O jogo termina quando suas vidas acabam.</li>
+              <li>ENTER para limpar a caixa de texto</li>
+              <li>ESC para pausar</li>
             </ul>
           </div>
           <button class="game-button" style="margin-top:1rem;" @click="mostrarComoJogar = false">Fechar</button>
@@ -167,7 +153,7 @@
     </div>
   </transition>
 
-  <!--Popup de GameOver (melhorado)-->
+  <!--Popup de GameOver-->
   <transition name="popup">
     <div v-if="mostrarTelaGameOver" class="popup-overlay">
       <div class="popup-content">
@@ -189,6 +175,16 @@
       </div>
     </div>
   </transition>
+
+  <!--Popup Jogo Pausado-->
+  <transition name="popup">
+    <div v-if="pausado && jogoIniciado && !mostrarTelaGameOver" class="popup-overlay">
+      <div class="popup-content">
+        <div class="popup-message">Jogo Pausado<br><span style="font-size:1rem;">Pressione ESC para voltar</span></div>
+      </div>
+    </div>
+  </transition>
+
 </template>
 
 <script>
@@ -254,7 +250,7 @@ export default {
         { name: 'Perin', type: 'dev', image: andreImg },
         { name: 'Marcos', type: 'dev', image: marcosImg },
         { name: 'Andrezão', type: 'dev', image: andrezImg },
-        { name: 'Gabe', type: 'dev' , image: gabrielImg },
+        { name: 'Gabe', type: 'dev', image: gabrielImg },
         { name: 'Dig', type: 'dev', image: heitorImg },
         { name: 'Bernardo', type: 'dev', image: bernardoImg },
       ],
@@ -287,14 +283,18 @@ export default {
   mounted() {
     this.atualizarDimensoesAreaJogo()
     window.addEventListener('resize', this.atualizarDimensoesAreaJogo)
-    // Atalho para pular de fase: Ctrl + P
+    // Atalho para pular de fase: Ctrl + M
     window.addEventListener('keydown', this.atalhoPularFase)
+    window.addEventListener('keydown', this.atalhoPausaEsc)
+    document.addEventListener('visibilitychange', this.handleVisibilityChange)
   },
 
   beforeDestroy() {
     this.limparIntervalos()
     window.removeEventListener('resize', this.atualizarDimensoesAreaJogo)
     window.removeEventListener('keydown', this.atalhoPularFase)
+    window.removeEventListener('keydown', this.atalhoPausaEsc)
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange)
   },
 
   methods: {
@@ -312,7 +312,7 @@ export default {
         this.mostrarPopup = false;
       }, 2000); // 2 segundos
     },
-    
+
     atalhoPularFase(e) {
       if (this.jogoIniciado && e.ctrlKey && (e.key === 'm' || e.key === 'M')) {
         // Simula fim da fase atual
@@ -336,6 +336,18 @@ export default {
             }
           });
         }, 2000);
+      }
+    },
+
+    atalhoPausaEsc(e) {
+      if (this.jogoIniciado && e.key === 'Escape') {
+        this.alternarPausa();
+      }
+    },
+
+    handleVisibilityChange() {
+      if (document.hidden && this.jogoIniciado && !this.pausado && !this.mostrarTelaGameOver) {
+        this.alternarPausa();
       }
     },
 
@@ -545,7 +557,7 @@ export default {
 
       let velocidade = 1 + Math.random() * 0.5;
       if (palavraTexto.length > 5) {
-        velocidade *= 0.6; 
+        velocidade *= 0.6;
       }
 
       const palavra = {
@@ -1242,7 +1254,8 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 8px; /* Espaço entre os botões */
+  gap: 8px;
+  /* Espaço entre os botões */
   border-radius: 500px;
   padding: 0.7em 0.5em;
 }
