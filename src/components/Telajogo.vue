@@ -373,7 +373,7 @@ export default {
       if (this.faseAtual === 5) {
         // Aumenta a velocidade base conforme a pontuação total na fase bônus
         // Exemplo: começa em 1.5 e aumenta 0.1 a cada 50 pontos
-        return 1 + Math.floor(this.pontuacaoFaseAtual / 50) * 0.1;
+        return 1.5 + Math.floor(this.pontuacaoFaseAtual / 100) * 0.4;
       }
       switch (this.faseAtual) {
         case 1: return 0.7;
@@ -451,14 +451,19 @@ export default {
 
     //Inicia a animaçao das palavras caindo
     iniciarAnimacaoPalavras() {
-      this.limparIntervalos()
+      this.limparIntervalos();
 
       // Configura intervalo para adicionar novas palavras
       this.intervaloPalavras = setInterval(() => {
-        this.adicionarPalavra()
-      }, 2000) // Intervalo entre palavras
+        if (this.faseAtual === 5) {
+          // Na fase bônus, adiciona 2 palavras por vez
+          this.adicionarPalavra();
+        } else {
+          this.adicionarPalavra();
+        }
+      }, this.faseAtual === 5 ? 1200 : 2000); // Intervalo menor na fase bônus
 
-      this.intervaloAnimacao = requestAnimationFrame(() => this.animarPalavras())
+      this.intervaloAnimacao = requestAnimationFrame(() => this.animarPalavras());
     },
 
     /**
@@ -580,7 +585,12 @@ export default {
     adicionarPalavra() {
       // Se a lista de palavras acabou, reabastece com as palavras da fase atual
       if (!this.listaPalavras.length) {
-        const palavrasOriginais = this.palavrasPorFase['fase' + this.faseAtual];
+        let palavrasOriginais;
+        if (this.faseAtual === 5) {
+          palavrasOriginais = this.palavrasPorFase['faseBonus'];
+        } else {
+          palavrasOriginais = this.palavrasPorFase['fase' + this.faseAtual];
+        }
         if (palavrasOriginais && palavrasOriginais.length) {
           this.listaPalavras = [...palavrasOriginais];
         } else {
@@ -591,6 +601,7 @@ export default {
       // Seleciona palavra aleatória da lista
       const indice = Math.floor(Math.random() * this.listaPalavras.length);
       const palavraTexto = this.listaPalavras[indice];
+      this.listaPalavras.splice(indice, 1);
 
       // Remove a palavra da lista para evitar repetição imediata
       this.listaPalavras.splice(indice, 1);
@@ -717,7 +728,7 @@ export default {
       this.pontuacaoFaseAtual = 0;
       this.palavraDigitada = '';
       this.palavrasAtivas = [];
-      this.vidas = 3;
+      this.vidas = 6;
       this.carregarFase(5);
       this.iniciarAnimacaoPalavras();
     }
