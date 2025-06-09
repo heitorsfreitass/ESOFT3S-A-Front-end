@@ -67,21 +67,6 @@
     "dhcp"
   ],
   "fase3": [
-    "algoritmo",
-    "recursao",
-    "complexidade",
-    "vetores",
-    "pilha",
-    "fila",
-    "grafo",
-    "ponteiro",
-    "hashing",
-    "busca",
-    "ordenacao",
-    "dinamica",
-    "estrutura"
-  ],
-  "fase4": [
     "bootstrap",
     "framework",
     "responsividade",
@@ -103,6 +88,21 @@
     "breakpoint",
     "mobile-first",
     "utilitario"
+  ],
+  "fase4": [
+    "algoritmo",
+    "recursao",
+    "complexidade",
+    "vetores",
+    "pilha",
+    "fila",
+    "grafo",
+    "ponteiro",
+    "hashing",
+    "busca",
+    "ordenacao",
+    "dinamica",
+    "estrutura"
   ],
   "faseBonus": [
   "algoritmo",
