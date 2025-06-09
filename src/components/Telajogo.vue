@@ -155,10 +155,37 @@
       </div>
     </transition>
 
-    <transition name="popup">
-      <div v-if="mostrarTransicaoFase" class="popup-overlay">
-        <div class="popup-content">
-          <div class="popup-message">{{ mensagemTransicaoFase }}</div>
+    <transition name="fade">
+      <div v-if="mostrarTransicaoFase" class="transition-overlay">
+        <div class="transition-content">
+          <div class="transition-title">FASE {{ faseAtual }} COMPLETA</div>
+
+          <div class="villains-container">
+            <!-- Vilão atual -->
+            <div v-if="vilaoAtual" class="villain-card">
+              <div class="villain-image-wrapper">
+                <img :src="vilaoAtual.image" :alt="vilaoAtual.name" class="villain-image">
+                <div class="defeated-badge">DERROTADO</div>
+              </div>
+              <div class="villain-name-transition">{{ vilaoAtual.name }}</div>
+            </div>
+
+            <!-- Seta de transição (se tiver proximo vilao) -->
+            <div v-if="proximoVilao" class="transition-arrow">→</div>
+
+            <!-- proximo vilao -->
+            <div v-if="proximoVilao" class="villain-card">
+              <div class="villain-image-wrapper">
+                <img :src="proximoVilao.image" :alt="proximoVilao.name" class="villain-image">
+                <div class="next-badge">PRÓXIMO</div>
+              </div>
+              <div class="villain-name-transition">{{ proximoVilao.name }}</div>
+            </div>
+          </div>
+
+          <div class="transition-footer">
+            Preparando próxima fase...
+          </div>
         </div>
       </div>
     </transition>
@@ -272,8 +299,8 @@ export default {
       viloes: [
         { name: 'Cidão, O Abominável (mas nem tanto)', image: cidaoImg, fase: 1, musica: fase1Msc },
         { name: 'Ferlini, O Gostosinho...', image: ferliniImg, fase: 2, musica: fase2Msc },
-        { name: 'Moreno, O Pequeno Grande Professor...', image: morenoImg, fase: 3, musica: fase2Msc },
-        { name: 'Hugo, O Sr. Bootstrap...', image: hugoImg, fase: 4, musica: fase2Msc },
+        { name: 'Hugo, O Sr. Bootstrap...', image: hugoImg, fase: 3, musica: fase2Msc },
+        { name: 'Moreno, O Pequeno Grande Professor...', image: morenoImg, fase: 4, musica: fase2Msc },
       ],
       audioElement: null,
       audioAtivo: true,
@@ -559,6 +586,7 @@ export default {
           this.limparIntervalos();
           this.palavrasAtivas = [];
           this.mensagemTransicaoFase = `Fase ${this.faseAtual} completa!`;
+          this.proximoVilao = this.viloes.find(v => v.fase === this.faseAtual + 1) || null;
           this.mostrarTransicaoFase = true;
 
           setTimeout(() => {
@@ -574,7 +602,7 @@ export default {
               // Terminou a fase 4, mostra tela de vitória
               this.fimDeJogo(true);
             }
-          }, 2000);
+          }, 4000);  // 4 segundos
 
         }
       }
@@ -1396,5 +1424,129 @@ export default {
 .fantasminha-leave-to {
   opacity: 0;
   transform: translateY(-40px) scale(1.2);
+}
+
+/* Transição suave */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+
+.transition-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.transition-content {
+  background: rgba(20, 10, 40, 0.95);
+  border-radius: 16px;
+  width: 80%;
+  max-width: 700px;
+  padding: 2.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.transition-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 15px rgba(110, 0, 255, 0.7);
+}
+
+.villains-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  margin: 2rem 0;
+}
+
+.villain-card {
+  flex: 1;
+  max-width: 250px;
+}
+
+.villain-image-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.villain-image {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.villain-card:nth-child(1) .villain-image {
+  border-color: #6a00ff;
+}
+
+.villain-card:nth-child(3) .villain-image {
+  border-color: #ff3366;
+}
+
+.defeated-badge, .next-badge {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(45deg, #6a00ff, #8e2de2);
+  color: white;
+  padding: 0.3rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.next-badge {
+  background: linear-gradient(45deg, #ff3366, #ff6b6b);
+}
+
+.villain-name-transition {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 0.5rem;
+}
+
+.transition-arrow {
+  font-size: 3rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0 -1rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.transition-footer {
+  margin-top: 2rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  letter-spacing: 1px;
 }
 </style>
