@@ -87,18 +87,19 @@ Um jogo de digitação divertido e desafiador onde você enfrenta professores co
 
 ```text
 src/
-├── assets/
+├── App.vue                # Componente raiz do Vue
+├── main.js                # Ponto de entrada da aplicação
+├── assets/                # Recursos visuais e sonoros
 │   ├── characters/        # Imagens dos personagens e vilões
 │   ├── sounds/            # Efeitos sonoros e músicas
 │   └── palavras.json      # Banco de palavras do jogo
-├── components/            # Componentes Vue
-├── views/                 # Telas principais
-│   ├── GameScreen.vue     # Tela principal do jogo
-│   ├── HistoryScreen.vue  # Tela de história
-│   └── CreditsScreen.vue  # Tela de créditos
-└── main.js                # Ponto de entrada
-
+├── components/            # Componentes reutilizáveis
+│   ├── TelaInicial.vue    # Tela inicial
+│   ├── TelaHistoria.vue   # Tela de história
+│   ├── TelaJogo.vue       # Tela principal do jogo
+│   └── TelaCreditos.vue   # Tela de créditos
 ```
+
 ---
 
 ## 🎨 Design e Estilo

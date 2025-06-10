@@ -12,7 +12,7 @@
     <!-- Quando o componente emitir o evento 'voltar', volta para a tela 'inicio' -->
     <TelaJogo v-if="telaAtual === 'jogo'" @voltar="mudarTela('inicio')"/>
 
-    <Telahistoria v-if="telaAtual === 'historia'" @voltar="mudarTela('inicio')"/>
+    <TelaHistoria v-if="telaAtual === 'historia'" @voltar="mudarTela('inicio')"/>
 
     <!-- SE FOR TER MAIS TELAS, CRIA O COMPONENTE, MAS COLOCA ELE AQUI E NO IMPORT ABAIXO, SE NÃO NÃO FUNFA -->
   </div>
@@ -23,7 +23,7 @@
 import TelaInicial from './components/TelaInicial.vue'
 import TelaCreditos from './components/TelaCreditos.vue'
 import TelaJogo from './components/Telajogo.vue'
-import Telahistoria from './components/Telahistoria.vue'
+import TelaHistoria from './components/TelaHistoria.vue'
 
 
 export default {
@@ -32,7 +32,7 @@ export default {
     TelaInicial,
     TelaCreditos,
     TelaJogo,
-    Telahistoria
+    TelaHistoria
   },
   data() {
     return {
