@@ -22,7 +22,7 @@
 // Importa os componentes que vão ser usados na interface
 import TelaInicial from './components/TelaInicial.vue'
 import TelaCreditos from './components/TelaCreditos.vue'
-import TelaJogo from './components/Telajogo.vue'
+import TelaJogo from './components/TelaJogo/Telajogo.vue'
 import TelaHistoria from './components/TelaHistoria.vue'
 
 

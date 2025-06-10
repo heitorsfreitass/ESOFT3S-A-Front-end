@@ -1,0 +1,774 @@
+/* Efeitos de fundo */
+.bg-effects {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.particle {
+  position: absolute;
+  background: rgba(110, 0, 255, 0.3);
+  border-radius: 50%;
+  animation: float 15s infinite linear;
+}
+
+.particle:nth-child(1) {
+  width: 300px;
+  height: 300px;
+  top: -100px;
+  left: -100px;
+  animation-delay: 0s;
+}
+
+.particle:nth-child(2) {
+  width: 200px;
+  height: 200px;
+  bottom: -50px;
+  right: -50px;
+  animation-delay: 5s;
+}
+
+.particle:nth-child(3) {
+  width: 150px;
+  height: 150px;
+  top: 50%;
+  right: -50px;
+  animation-delay: 10s;
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  50% {
+    transform: translate(50px, 50px) rotate(180deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(360deg);
+  }
+}
+
+/* Tela de seleção */
+.selection-screen {
+  width: 90%;
+  max-width: 1000px;
+  padding: 2rem;
+  background: rgba(10, 4, 26, 0.8);
+  border-radius: 20px;
+  box-shadow: 0 0 30px rgba(110, 0, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.characters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.character-card {
+  background: rgba(20, 10, 40, 0.6);
+  border-radius: 15px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(110, 0, 255, 0.3);
+}
+
+.character-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(110, 0, 255, 0.3);
+  border-color: var(--accent);
+}
+
+.character-card.selected {
+  background: rgba(110, 0, 255, 0.2);
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+}
+
+.character-card.selected .character-selector {
+  opacity: 1;
+}
+
+.character-image-container {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.character-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.character-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.character-name {
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  color: var(--light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.character-selector {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--accent);
+  border-radius: 15px;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.start-button {
+  position: relative;
+  overflow: visible;
+  background: linear-gradient(45deg, var(--accent), var(--success));
+}
+
+.start-button .button-glow {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: linear-gradient(45deg, var(--accent), var(--success));
+  border-radius: 50px;
+  filter: blur(15px);
+  opacity: 0.7;
+  z-index: -1;
+  animation: pulse-glow 2s infinite;
+}
+
+.back-button {
+  background: linear-gradient(45deg, var(--dark), #333);
+}
+
+/* Tela de jogo */
+.game-screen {
+  width: 90%;
+  max-width: 1200px;
+  height: 90vh;
+  background: rgba(10, 4, 26, 0.8);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 0 30px rgba(110, 0, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.player-avatar-container {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.player-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+
+.player-level {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background: var(--primary);
+  color: white;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border: 2px solid var(--dark);
+}
+
+.player-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.player-name {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--light);
+}
+
+.health-bar {
+  width: 120px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.health-fill {
+  height: 100%;
+  background: linear-gradient(to right, var(--danger), var(--success));
+  transition: width 0.3s;
+}
+
+.health-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.6rem;
+  color: white;
+  text-shadow: 0 0 3px black;
+}
+
+.game-stats {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.3rem;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
+}
+
+.villain-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.villain-avatar-container {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.villain-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--danger);
+  box-shadow: 0 0 10px var(--danger);
+}
+
+.villain-level {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background: var(--danger);
+  color: white;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border: 2px solid var(--dark);
+}
+
+.villain-name {
+  font-size: 0.7rem;
+  color: var(--danger);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+  max-width: 100px;
+}
+
+/* Área do jogo */
+.game-area {
+  flex-grow: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 15px;
+  margin: 1rem 0;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.falling-words-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.falling-word {
+  position: absolute;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  font-weight: bold;
+  white-space: nowrap;
+  user-select: none;
+  transition: color 0.3s;
+  animation: float-text 1s infinite alternate;
+}
+
+@keyframes float-text {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-5px);
+  }
+}
+
+/* Controles */
+.game-controls {
+  width: 100%;
+  padding: 0.5rem 0;
+}
+
+.input-container {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.game-input {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50px;
+  color: white;
+  outline: none;
+  position: relative;
+  z-index: 1;
+}
+
+.input-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, var(--primary), var(--accent));
+  border-radius: 50px;
+  z-index: 0;
+  opacity: 0.7;
+  transition: all 0.3s;
+}
+
+.input-container:focus-within .input-border {
+  opacity: 1;
+  transform: scale(1.02);
+}
+
+.game-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background: linear-gradient(145deg, var(--darker), var(--dark));
+  border-radius: 15px;
+  padding: 2rem 3rem;
+  text-align: center;
+  max-width: 80%;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 30px rgba(110, 0, 255, 0.5);
+}
+
+.popup-message {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  background: linear-gradient(to right, var(--accent), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.popup-progress {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.popup-progress::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(to right, var(--accent), var(--secondary));
+  animation: progress-bar 3s linear forwards;
+}
+
+@keyframes progress-bar {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Transições */
+.popup-enter-active,
+.popup-leave-active {
+  transition: opacity 0.3s;
+}
+
+.popup-enter,
+.popup-leave-to {
+  opacity: 0;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .game-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .characters-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .game-button {
+    width: 100%;
+  }
+
+  .player-info,
+  .game-stats,
+  .villain-container {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .popup-content {
+    padding: 1.5rem;
+  }
+
+  .popup-message {
+    font-size: 1.2rem;
+  }
+
+  .how-to-play-container {
+    top: 12px;
+    right: 12px;
+  }
+}
+
+.how-to-play-container {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  z-index: 10;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  /* Espaço entre os botões */
+  border-radius: 500px;
+  padding: 0.7em 0.5em;
+}
+
+.how-to-play-button {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 50%;
+  padding: 0;
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  position: relative;
+  overflow: visible;
+}
+
+.how-to-play-button::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  background: rgba(110, 0, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0.7;
+  z-index: -1;
+  animation: pulse-bolinha 1.5s infinite;
+}
+
+.how-to-play-button:hover {
+  background: linear-gradient(45deg, var(--accent), var(--primary));
+  color: #fff;
+}
+
+@keyframes pulse-bolinha {
+  70% {
+    transform: translate(-50%, -50%) scale(2.2);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(2.2);
+    opacity: 0;
+  }
+}
+
+.fantasminha {
+  position: absolute;
+  color: #00ff88;
+  font-size: 1.3rem;
+  font-weight: bold;
+  text-shadow: 0 0 8px #00ff88, 0 0 2px #fff;
+  pointer-events: none;
+  opacity: 1;
+  z-index: 10;
+  transition: transform 1s cubic-bezier(.4, 2, .6, 1), opacity 1s;
+}
+
+.fantasminha-enter-active,
+.fantasminha-leave-active {
+  transition: transform 1s, opacity 1s;
+}
+
+.fantasminha-enter,
+.fantasminha-leave-to {
+  opacity: 0;
+  transform: translateY(-40px) scale(1.2);
+}
+
+/* Transição suave */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+
+.transition-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.transition-content {
+  background: rgba(20, 10, 40, 0.95);
+  border-radius: 16px;
+  width: 80%;
+  max-width: 700px;
+  padding: 2.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.transition-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 15px rgba(110, 0, 255, 0.7);
+}
+
+.villains-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  margin: 2rem 0;
+}
+
+.villain-card {
+  flex: 1;
+  max-width: 250px;
+}
+
+.villain-image-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.villain-image {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.villain-card:nth-child(1) .villain-image {
+  border-color: #6a00ff;
+}
+
+.villain-card:nth-child(3) .villain-image {
+  border-color: #ff3366;
+}
+
+.defeated-badge, .next-badge {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(45deg, #6a00ff, #8e2de2);
+  color: white;
+  padding: 0.3rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.next-badge {
+  background: linear-gradient(45deg, #ff3366, #ff6b6b);
+}
+
+.villain-name-transition {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 0.5rem;
+}
+
+.transition-arrow {
+  font-size: 3rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0 -1rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.transition-footer {
+  margin-top: 2rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
