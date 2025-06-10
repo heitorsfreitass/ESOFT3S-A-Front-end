@@ -1,6 +1,6 @@
 # 🎮 Final Code - A Jornada dos Devs
 
-![Final Code Screenshot](assets/screenshot.png)
+![Final Code Screenshot](src/assets/screenshot.png)
 
 Um jogo de digitação divertido e desafiador onde você enfrenta professores como vilões digitando palavras rapidamente!
 
