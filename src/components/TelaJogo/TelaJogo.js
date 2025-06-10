@@ -118,13 +118,6 @@ export default {
     selecionarPersonagem(index) {
       this.personagemSelecionado = index
     },
-    mostrarPopupTemporario(msg) {
-      this.mensagemPopup = msg;
-      this.mostrarPopup = true;
-      setTimeout(() => {
-        this.mostrarPopup = false;
-      }, 2000); // 2 segundos
-    },
 
     atalhoPularFase(e) {
       if (this.jogoIniciado && e.ctrlKey && (e.key === 'm' || e.key === 'M')) {
