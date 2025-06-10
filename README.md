@@ -131,12 +131,14 @@ src/
 ## 📜 Créditos
 
 - Desenvolvido pelos alunos:
-    André Augusto Silva Domingues
-    André Perin Geraldo
-    Bernardo Fiorese Perly
-    Gabriel de Souza Carvalho
-    Marcos Vinicius de Azevedo Batista
-    Heitor Henrique Scramim de Freitas
+    ```text
+    - André Augusto Silva Domingues
+    - André Perin Geraldo
+    - Bernardo Fiorese Perly
+    - Gabriel de Souza Carvalho
+    - Marcos Vinicius de Azevedo Batista
+    - Heitor Henrique Scramim de Freitas
+    ```
 
 - Músicas por:
 
