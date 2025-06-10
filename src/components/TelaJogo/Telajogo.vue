@@ -8,7 +8,7 @@
     </div>
 
     <div v-if="mostrarBotaoAudio" class="audio-permission">
-      <button v-if="audioElement" class="game-button" @click="pausarOuRetomarMusica" style="margin-left: 1rem;">
+      <button v-if="audioElement" class="game-button" @click="tocarSelect(); pausarOuRetomarMusica()" style="margin-left: 1rem;">
         {{ audioElement.paused ? 'Ligar Música' : 'Desligar Música' }}
       </button>
     </div>
@@ -17,8 +17,10 @@
     <div v-if="!jogoIniciado" class="selection-screen">
       <h1 class="game-title">ESCOLHA SEU PERSONAGEM</h1>
       <div class="characters-grid">
+        <!-- Selecionar personagem -->
         <div v-for="(p, index) in personagens" :key="index" class="character-card"
-          :class="{ selected: personagemSelecionado === index }" @click="selecionarPersonagem(index)">
+          :class="{ selected: personagemSelecionado === index }"
+          @click="tocarSelect(); selecionarPersonagem(index)">
           <div class="character-image-container">
             <img v-if="p.image" :src="p.image" class="character-image" />
             <div v-else class="character-placeholder">
@@ -31,11 +33,13 @@
       </div>
 
       <div class="action-buttons">
-        <button class="game-button start-button" @click="iniciarJogo" :disabled="personagemSelecionado === null">
+        <!-- Iniciar jogo -->
+        <button class="game-button start-button" @click="tocarSelect(); iniciarJogo()" :disabled="personagemSelecionado === null">
           <span>INICIAR JOGO</span>
           <div class="button-glow"></div>
         </button>
-        <button class="game-button back-button" @click="$emit('voltar')">
+        <!-- Voltar -->
+        <button class="game-button back-button" @click="tocarSelect(); $emit('voltar')">
           <span>VOLTAR</span>
         </button>
       </div>
@@ -43,7 +47,7 @@
 
     <!--Botao como jogar no canto da tela-->
     <div class="how-to-play-container">
-      <button class="game-button how-to-play-button" @click="mostrarComoJogar = true" aria-label="Como Jogar">
+      <button class="game-button how-to-play-button" @click="tocarSelect(); mostrarComoJogar = true" aria-label="Como Jogar">
         <span>?</span>
       </button>
     </div>
@@ -140,7 +144,8 @@
               <li>ESC para pausar</li>
             </ul>
           </div>
-          <button class="game-button" style="margin-top:1rem;" @click="mostrarComoJogar = false">Fechar</button>
+          <!-- Botão de pausar/retomar música -->
+          <button class="game-button" style="margin-top:1rem;" @click="tocarSelect(); mostrarComoJogar = false">Fechar</button>
         </div>
       </div>
     </transition>
@@ -206,9 +211,9 @@
             </ul>
           </div>
           <div style="display: flex; gap: 1rem; justify-content: center;">
-            <button v-if="resultadoFinal.venceu" class="game-button" @click="iniciarFaseBonus">Fase Bônus</button>
-            <button v-else class="game-button" @click="jogarNovamente">Jogar Novamente</button>
-            <button class="game-button" @click="voltarTelaInicial">Tela Inicial</button>
+            <button v-if="resultadoFinal.venceu" class="game-button" @click="iniciarFaseBonus()">Fase Bônus</button>
+            <button v-else class="game-button" @click="jogarNovamente()">Jogar Novamente</button>
+            <button class="game-button" @click="voltarTelaInicial()">Tela Inicial</button>
           </div>
         </div>
       </div>

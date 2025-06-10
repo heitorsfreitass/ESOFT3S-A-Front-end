@@ -22,6 +22,8 @@ import fase4Msc from '@/assets/sounds/quarta-fase.mp3'
 import fase5Msc from '@/assets/sounds/bonus-fase.mp3'
 import acertoSound from '@/assets/sounds/acerto.mp3'
 import erroSound from '@/assets/sounds/erro.mp3'
+import selectSound from '@/assets/sounds/select.mp3'
+
 
 import gameOver from '@/assets/sounds/gameover.mp3'
 import victory from '@/assets/sounds/victory.mp3'
@@ -113,11 +115,17 @@ export default {
     document.removeEventListener('visibilitychange', this.handleVisibilityChange)
   },
 
-  methods: {    
+  methods: {
 
     //Seleciona um personagem pelo índice.
     selecionarPersonagem(index) {
       this.personagemSelecionado = index
+    },
+
+    tocarSelect() {
+      const audio = new Audio(selectSound);
+      audio.volume = 0.4; // ajuste o volume se quiser
+      audio.play();
     },
 
     /**
