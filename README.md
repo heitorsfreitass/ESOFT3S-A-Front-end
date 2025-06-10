@@ -128,6 +128,7 @@ src/
     ```bash
    npm run dev
 4. [Acesse no navegador](http://localhost:8080)
+5. [Jogue aqui](https://heitorsfreitass.github.io/ESOFT3S-A-Front-end/)
 
 ## 📜 Créditos
 
