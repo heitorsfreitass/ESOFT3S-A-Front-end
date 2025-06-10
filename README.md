@@ -141,6 +141,3 @@ src/
     - Marcos Vinicius de Azevedo Batista
     - Heitor Henrique Scramim de Freitas
     ```
-
-- Músicas por:
-
